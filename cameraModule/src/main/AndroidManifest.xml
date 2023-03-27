@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+          xmlns:tools="http://schemas.android.com/tools"
+          package="com.example.cameramodule"
+          android:installLocation="auto"
+>
+    <uses-permission android:name="android.permission.GET_ACCOUNTS" />
+    <uses-permission android:name="android.permission.USE_CREDENTIALS" />
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+    <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
+    <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
+    <uses-permission android:name="android.permission.CAMERA"/>
+    <uses-permission android:name="android.permission.CHANGE_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.READ_PHONE_STATE" />
+
+
+    <uses-sdk
+            tools:overrideLibrary="
+          androidx.camera.camera2, androidx.camera.core,
+          androidx.camera.view, androidx.camera.lifecycle, com.bun.miitmdid" />
+
+    <uses-feature android:name="android.hardware.camera"/>
+
+    <application
+            android:requestLegacyExternalStorage="true"
+            android:allowBackup="true"
+            android:allowClearUserData="true"
+            android:largeHeap="true"
+            android:supportsRtl="true"
+            android:usesCleartextTraffic="true"
+            >
+
+        <activity android:name="com.example.cameramodule.java.LivePreviewActivity"
+                  android:exported="true"
+                  android:theme="@style/AppTheme"
+                  android:launchMode="standard"/>
+
+        <activity
+                android:name=".preference.SettingsActivity"
+                android:launchMode="standard"
+                android:exported="false"/>
+
+    </application>
+</manifest>

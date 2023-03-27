@@ -1,0 +1,129 @@
+plugins {
+    id 'com.android.library'
+}
+//apply plugin: 'com.kezong.fat-aar'
+android {
+    compileSdkVersion 30
+    defaultConfig {
+        minSdkVersion 21
+        targetSdkVersion 30
+        testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
+        multiDexEnabled true
+        compileOptions {
+            sourceCompatibility JavaVersion.VERSION_1_8
+            targetCompatibility JavaVersion.VERSION_1_8
+        }
+        ndk {
+            abiFilters 'x86','armeabi-v7a','arm64-v8a'
+        }
+    }
+    lintOptions {
+        abortOnError false
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+    buildToolsVersion '30.0.3'
+
+
+}
+
+repositories {
+    flatDir {
+        dirs '../app/libs'
+    }
+    maven { url 'https://androidx.dev/snapshots/builds/6787662/artifacts/repository/' }
+}
+
+dependencies {
+    compileOnly fileTree(dir: 'libs', include: ['*.jar'])
+    compileOnly fileTree(dir: '../app/libs', include: ['uniapp-v8-release.aar'])
+//    compileOnly fileTree(dir: '../app/libs', include: ['*.aar'])
+
+    implementation  'com.alibaba:fastjson:1.1.46.android'
+    implementation 'androidx.multidex:multidex:2.0.1'
+    // Barcode model
+    //implementation 'com.google.mlkit:barcode-scanning:17.0.0'
+    // Or comment the dependency above and uncomment the dependency below to
+    // use unbundled model that depends on Google Play Services
+    // implementation 'com.google.android.gms:play-services-mlkit-barcode-scanning:16.2.1'
+
+    // Object detection feature with bundled default classifier
+    implementation 'com.google.mlkit:object-detection:16.2.6'
+
+    // Object detection feature with custom classifier support
+    implementation 'com.google.mlkit:object-detection-custom:16.3.3'
+
+    // Face features 2023
+    implementation 'com.google.mlkit:face-detection:16.1.2'
+    // Or comment the dependency above and uncomment the dependency below to
+    // use unbundled model that depends on Google Play Services
+    // implementation 'com.google.android.gms:play-services-mlkit-face-detection:16.2.0'
+
+    // Text features
+    implementation 'com.google.android.gms:play-services-mlkit-text-recognition:17.0.0'
+    // Or comment the dependency above and uncomment the dependency below to
+    // use bundled model. 2023
+    // implementation 'com.google.mlkit:text-recognition:16.0.0-beta1'
+//    implementation 'com.google.mlkit:text-recognition-chinese:16.0.0-beta1'
+//    implementation 'com.google.mlkit:text-recognition-devanagari:16.0.0-beta1'
+//    implementation 'com.google.mlkit:text-recognition-japanese:16.0.0-beta1'
+//    implementation 'com.google.mlkit:text-recognition-korean:16.0.0-beta1'
+
+    // Image labeling
+//    implementation 'com.google.mlkit:image-labeling:17.0.5'
+    // Or comment the dependency above and uncomment the dependency below to
+    // use unbundled model that depends on Google Play Services
+    // implementation 'com.google.android.gms:play-services-mlkit-image-labeling:16.0.5'
+
+    // Image labeling custom
+//    implementation 'com.google.mlkit:image-labeling-custom:16.3.1'
+
+    // Pose detection with default models
+    implementation 'com.google.mlkit:pose-detection:17.0.1-beta5'
+    // Pose detection with accurate models
+    implementation 'com.google.mlkit:pose-detection-accurate:17.0.1-beta5'
+
+    // Selfie segmentation
+//    implementation 'com.google.mlkit:segmentation-selfie:16.0.0-beta2'
+
+    implementation 'com.google.mlkit:camera:16.0.0-beta1'
+
+    // -------------------------------------------------------
+
+    implementation 'com.google.code.gson:gson:2.8.6'
+    implementation 'com.google.guava:guava:27.1-android'
+
+    // For how to setup gradle dependencies in Android X, see:
+    // https://developer.android.com/training/testing/set-up-project#gradle-dependencies
+    // Core library
+//    androidTestImplementation 'androidx.test:core:1.3.0'
+
+    // AndroidJUnitRunner and JUnit Rules
+//    androidTestImplementation 'androidx.test:runner:1.3.0'
+//    androidTestImplementation 'androidx.test:rules:1.3.0'
+
+    // Assertions
+//    androidTestImplementation 'androidx.test.ext:junit:1.1.2'
+
+    // ViewModel and LiveData
+    implementation "androidx.lifecycle:lifecycle-livedata:2.3.1"
+    implementation "androidx.lifecycle:lifecycle-viewmodel:2.3.1"
+
+    implementation 'androidx.appcompat:appcompat:1.2.0'
+//    implementation 'androidx.annotation:annotation:1.3.0'
+    implementation 'androidx.constraintlayout:constraintlayout:2.0.4'
+
+    // CameraX
+//    implementation "androidx.camera:camera-camera2:1.0.0-SNAPSHOT"
+//    implementation "androidx.camera:camera-lifecycle:1.0.0-SNAPSHOT"
+//    implementation "androidx.camera:camera-view:1.0.0-SNAPSHOT"
+
+    // On Device Machine Learnings
+    implementation "com.google.android.odml:image:1.0.0-beta1"
+
+}
