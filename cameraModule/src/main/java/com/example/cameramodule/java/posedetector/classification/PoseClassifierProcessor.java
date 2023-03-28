@@ -21,7 +21,9 @@ import android.graphics.fonts.Font;
 import android.graphics.fonts.FontStyle;
 import android.os.Looper;
 import android.util.Log;
+import android.widget.TextView;
 import androidx.annotation.WorkerThread;
+import com.example.cameramodule.R;
 import com.example.cameramodule.java.PlayMusic;
 import com.google.android.gms.common.util.CollectionUtils;
 import com.google.common.base.Preconditions;
@@ -139,7 +141,7 @@ public class PoseClassifierProcessor {
    * output：输出是一个list存放的是pose分类结果
    */
   @WorkerThread
-  public List<String> getPoseResult(Context context, Pose pose, Integer num) {
+  public List<String> getPoseResult(Context context, Pose pose, Integer num, TextView numText, TextView totalText) {
     Preconditions.checkState(Looper.myLooper() != Looper.getMainLooper());
     List<String> result = new ArrayList<>();
     //先对输入的pose单独判断其类别，得到分类结果classification。
@@ -152,9 +154,11 @@ public class PoseClassifierProcessor {
       if (pose.getAllPoseLandmarks().isEmpty()) {
         if("".equals(lastRepResult)){
           lastRepResult = String.format(
-                  Locale.US, "%d /%d reps", 0, num);
+                  Locale.US, "%d / %d reps", 0, num);
         }
         result.add(lastRepResult);
+        numText.setText("0");
+        totalText.setText("/"+num+"");
         //Log.i(TAG, "PoseClassifierProcessor->getPoseResult->result：" + result.toString());
         return result;
       }
@@ -179,12 +183,15 @@ public class PoseClassifierProcessor {
           if(repsAfter > num){
             completeNum = repsAfter;
             lastRepResult = String.format(
-                    Locale.US, "%d /%d reps", num, num);
+                    Locale.US, "%d / %d", num, num);
+            numText.setText(num+"");
+            totalText.setText("/"+num+"");
           }else {
             completeNum = repsAfter;
-
+            numText.setText(repsAfter+"");
+            totalText.setText("/"+num+"");
             lastRepResult = String.format(
-                    Locale.US, "%d /%d reps", repsAfter, num);
+                    Locale.US, "%d / %d", repsAfter, num);
           }
           break;
         }

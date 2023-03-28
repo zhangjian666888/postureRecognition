@@ -20,47 +20,178 @@
           android:layout_height="match_parent"
           app:layout_constraintTop_toTopOf="@id/preview_view"
           app:layout_constraintStart_toStartOf="parent"/>
-  <VideoView
-          android:id="@+id/video"
-          android:layout_width="150dp"
-          android:layout_height="200dp"
-          app:layout_constraintRight_toRightOf="@id/preview_view"
-          tools:ignore="MissingConstraints"
-          android:layout_marginTop="10dp"
-          app:layout_constraintTop_toBottomOf="@+id/control"/>
 
-  <LinearLayout
+  <RelativeLayout
           android:id="@id/control"
-          android:layout_width="48dp"
-          android:layout_height="48dp"
-          app:layout_constraintRight_toRightOf="parent"
-          android:orientation="horizontal"
-          tools:ignore="MissingConstraints">
-
-    <ToggleButton
-            android:id="@+id/facing_switch"
+          android:layout_width="match_parent"
+          android:layout_height="60dp"
+          android:background="#000"
+          app:layout_constraintTop_toTopOf="parent"
+          app:layout_constraintEnd_toEndOf="parent">
+    <Button
+            android:id="@+id/videoButton"
             android:layout_width="48dp"
             android:layout_height="48dp"
-            android:layout_gravity="center_vertical"
-            android:background="@layout/toggle_style"
-            android:checked="false"
-            android:textOff=""
-            android:textOn=""/>
-  </LinearLayout>
+            android:background="@layout/video_button_style"
+            android:layout_centerVertical="true"/>
 
-  <LinearLayout
-          android:id="@id/control"
-          android:layout_width="48dp"
-          android:layout_height="48dp"
+  </RelativeLayout>
+
+  <TextView
+          android:id="@+id/numText"
+          android:layout_width="100dp"
+          android:layout_height="60dp"
+          app:layout_constraintTop_toBottomOf="@+id/control"
+          app:layout_constraintRight_toRightOf="@+id/control"
+          android:layout_marginTop="20dp"
+          android:layout_marginRight="30dp"
+          android:textColor="#FEFCFC"
+          android:textAlignment="center"
+          android:textStyle="bold"
+          android:textSize="50dp"
+          android:background="@drawable/list_item_background"
+          tools:ignore="MissingConstraints"/>
+
+  <TextView
+          android:id="@+id/totalText"
+          android:layout_width="100dp"
+          android:layout_height="60dp"
+          app:layout_constraintTop_toBottomOf="@+id/numText"
+          app:layout_constraintRight_toRightOf="@+id/control"
+          android:layout_marginTop="10dp"
+          android:layout_marginRight="30dp"
+          android:textColor="#FEFCFC"
+          android:textAlignment="center"
+          android:textStyle="bold"
+          android:textSize="40dp"
+          tools:ignore="MissingConstraints"/>
+
+  <RelativeLayout
+          android:layout_width="match_parent"
+          android:layout_height="70dp"
           android:orientation="horizontal"
-          tools:ignore="MissingConstraints">
+          android:background="#000"
+          app:layout_constraintBottom_toBottomOf="parent">
 
     <Button
             android:id="@+id/backBtn"
             android:layout_width="48dp"
             android:layout_height="48dp"
-            android:layout_gravity="center_vertical"
-            android:background="@layout/back_style"/>
-  </LinearLayout>
+            android:background="@layout/back_style"
+            android:layout_alignParentRight="true"
+            android:layout_centerVertical="true"/>
+
+    <ToggleButton
+            android:id="@+id/facing_switch"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:background="@layout/toggle_style"
+            android:layout_centerVertical="true"
+            android:checked="false"
+            android:textOff=""
+            android:textOn=""/>
+  </RelativeLayout>
+
+
+<!-- 视频播放 -->
+  <RelativeLayout
+          android:id="@+id/root_rl"
+          android:layout_width="350dp"
+          android:layout_height="450dp"
+          android:background="#000000"
+          app:layout_constraintBottom_toBottomOf="parent"
+          app:layout_constraintLeft_toLeftOf="parent"
+          app:layout_constraintRight_toRightOf="parent"
+          app:layout_constraintTop_toTopOf="parent"
+          tools:ignore="MissingConstraints">
+
+    <SurfaceView
+            android:id="@+id/surfaceView"
+            android:layout_width="match_parent"
+            android:layout_height="450dp" />
+
+    <ImageView
+            android:id="@+id/backVideo"
+            android:layout_width="60dp"
+            android:layout_height="60dp"
+            android:src="@drawable/close_circle_fill"
+            android:layout_alignParentRight="true"/>
+
+    <ImageView
+            android:id="@+id/playOrPause"
+            android:layout_width="60dp"
+            android:layout_height="60dp"
+            android:layout_centerInParent="true"
+            android:src="@android:drawable/ic_media_play"/>
+    <LinearLayout
+            android:id="@+id/control_ll"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:background="#595858"
+            android:orientation="vertical">
+
+      <RelativeLayout
+              android:layout_width="match_parent"
+              android:layout_height="wrap_content"
+              android:layout_marginLeft="10dp"
+              android:layout_marginRight="10dp"
+              android:orientation="horizontal"
+              android:paddingBottom="5dp">
+
+        <TextView
+                android:id="@+id/tv_start_time"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentLeft="true"
+                android:layout_marginLeft="30dp"
+                android:text="00.00"
+                android:textColor="#ffffff"/>
+        <TextView
+                android:id="@+id/tv_separate_time"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_toRightOf="@+id/tv_start_time"
+                android:layout_marginLeft="1dp"
+                android:text="/"
+                android:textColor="#ffffff"/>
+        <TextView
+                android:id="@+id/tv_end_time"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_toRightOf="@+id/tv_separate_time"
+                android:layout_marginLeft="1dp"
+                android:text="00.00"
+                android:textColor="#ffffff"/>
+        <ImageView
+                android:id="@+id/tv_backward"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/tv_start_time"
+                android:layout_alignParentLeft="true"
+                android:layout_marginLeft="1dp"
+                android:src="@android:drawable/ic_media_rew"/>
+
+        <SeekBar
+                android:id="@+id/tv_progess"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_toRightOf="@+id/tv_backward"
+                android:layout_toLeftOf="@+id/tv_forward"
+                android:layout_below="@+id/tv_start_time"/>
+
+        <ImageView
+                android:id="@+id/tv_forward"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/tv_start_time"
+                android:layout_alignParentRight="true"
+                android:layout_marginRight="1dp"
+                android:src="@android:drawable/ic_media_ff"/>
+
+      </RelativeLayout>
+
+    </LinearLayout>
+  </RelativeLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

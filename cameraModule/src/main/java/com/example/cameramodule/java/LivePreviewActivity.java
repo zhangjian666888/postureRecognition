@@ -57,7 +57,15 @@ import java.util.Map;
 public final class LivePreviewActivity extends Activity
         implements OnRequestPermissionsResultCallback,
         OnItemSelectedListener,
-        CompoundButton.OnCheckedChangeListener {
+        CompoundButton.OnCheckedChangeListener,
+        SurfaceHolder.Callback,
+        MediaPlayer.OnPreparedListener,
+        MediaPlayer.OnCompletionListener,
+        MediaPlayer.OnErrorListener,
+        MediaPlayer.OnInfoListener, View.OnClickListener,
+        MediaPlayer.OnSeekCompleteListener,
+        MediaPlayer.OnVideoSizeChangedListener,
+        SeekBar.OnSeekBarChangeListener, View.OnTouchListener {
 
   private static final String POSE_DETECTION = "深蹲";
   private static final String Lift_YOUR_LEGS_STRAIGHT_BACK = "向后直退抬高";
@@ -74,23 +82,21 @@ public final class LivePreviewActivity extends Activity
   private String selectedModel = POSE_DETECTION;
   private Integer num = 10;
   private Button backBtn;
+  private Button videoBtn;
+  private ImageView backVideo;
   private VideoView videoView;
+  private TextView totalText;
+  private TextView numText;
   MediaController mediaController;
   private String videoUrl = "";
   @Override
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
-    Intent intent1 = getIntent();
-    if(intent1 != null){
-      selectedModel = intent1.getStringExtra("actionName");
-      if(intent1.getStringExtra("num") != null && !"".equals(intent1.getStringExtra("num"))){
-        num = Integer.parseInt(intent1.getStringExtra("num"));
-      }
-      videoUrl = intent1.getStringExtra("videoUrl");
-      //videoUrl = "http://43.143.181.73/app/1ac086e2-4759-45ec-84c4-1c68d1291a7016672734210002022-11-01.mp4";
-    }
-
     setContentView(R.layout.activity_vision_live_preview);
+
+    //文本框
+    numText = (TextView)findViewById(R.id.numText);
+    totalText = (TextView)findViewById(R.id.totalText);
 
     preview = findViewById(R.id.preview_view);
     if (preview == null) {
@@ -103,6 +109,16 @@ public final class LivePreviewActivity extends Activity
 
     ToggleButton facingSwitch = findViewById(R.id.facing_switch);
     facingSwitch.setOnCheckedChangeListener(this);
+
+    Intent intent1 = getIntent();
+    if(intent1 != null){
+      selectedModel = intent1.getStringExtra("actionName");
+      if(intent1.getStringExtra("num") != null && !"".equals(intent1.getStringExtra("num"))){
+        num = Integer.parseInt(intent1.getStringExtra("num"));
+      }
+      videoUrl = intent1.getStringExtra("videoUrl");
+      //videoUrl = "http://43.143.181.73/app/1ac086e2-4759-45ec-84c4-1c68d1291a7016672734210002022-11-01.mp4";
+    }
 
     if (allPermissionsGranted()) {
       //默认选择第一个检测类型
@@ -121,33 +137,28 @@ public final class LivePreviewActivity extends Activity
         }
     );
 
-    //视频播放1
-    if(!"".equals(videoUrl) && videoUrl != null){
-      playVideo(videoUrl);
-    }
+    //视频播放2
+    initViews();
+    initData();
+    initSurfaceView();
+    initPlayer();
+    initEvent();
 
-  }
+    videoBtn = (Button) findViewById(R.id.videoButton);
+    videoBtn.setOnClickListener(
+          v->{
+            rootViewRl.setVisibility(View.VISIBLE);
+          }
+    );
 
-  private void playVideo(String videoUrl){
-    videoView = new VideoView(this);
-    videoView = (VideoView)findViewById(R.id.video);
-    videoView.setVideoURI(Uri.parse(videoUrl));
-    mediaController = new MediaController(this);
-    mediaController.setMediaPlayer(videoView);
-    videoView.setMediaController(mediaController);
-    videoView.start();
-    videoView.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
-      @Override
-      public void onPrepared(MediaPlayer mp) {
-        videoView.start();
-      }
-    });
-    videoView.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
-      @Override
-      public void onCompletion(MediaPlayer mp) {
-        videoView.start();
-      }
-    });
+    backVideo = (ImageView) findViewById(R.id.backVideo);
+    backVideo.setOnClickListener(
+          v->{
+            rootViewRl.setVisibility(View.INVISIBLE);
+            mPlayer.seekTo(0);
+          }
+    );
+
   }
 
   private void backData(){
@@ -221,7 +232,7 @@ public final class LivePreviewActivity extends Activity
                         rescaleZ,
                         true,
                         true,
-                        "POSE_DJZL", num));
+                        "POSE_DJZL", num, numText, totalText));
       }else if(model.indexOf(STRAIGHT_FORWARD_LEG_LIFT) >= 0){
         //前直抬腿
         cameraSource.setMachineLearningFrameProcessor(
@@ -233,7 +244,7 @@ public final class LivePreviewActivity extends Activity
                         rescaleZ,
                         true,
                         true,
-                        "POSE_QZTT", num));
+                        "POSE_QZTT", num, numText, totalText));
       }else if(model.indexOf(STANDING_KNEE_BEND) >= 0){
         //站立位屈膝
         cameraSource.setMachineLearningFrameProcessor(
@@ -245,7 +256,7 @@ public final class LivePreviewActivity extends Activity
                         rescaleZ,
                         true,
                         true,
-                        "POSE_ZLWQX", num));
+                        "POSE_ZLWQX", num, numText, totalText));
       }else{
         //深蹲
         cameraSource.setMachineLearningFrameProcessor(
@@ -257,7 +268,7 @@ public final class LivePreviewActivity extends Activity
                         rescaleZ,
                         true,
                         true,
-                        "POSE_DETECTION", num));
+                        "POSE_DETECTION", num, numText, totalText));
       }
     } catch (RuntimeException e) {
       //Log.e(TAG, "Can not create image processor: " + model, e);
@@ -269,11 +280,6 @@ public final class LivePreviewActivity extends Activity
     }
   }
 
-  /**
-   * Starts or restarts the camera source, if it exists. If the camera source doesn't exist yet
-   * (e.g., because onResume was called before the camera source was created), this will be called
-   * again when the camera source is created.
-   */
   private void startCameraSource() {
     if (cameraSource != null) {
       try {
@@ -373,10 +379,6 @@ public final class LivePreviewActivity extends Activity
 
   /**
    * 选择检测类型的方法
-   * @param parent
-   * @param view
-   * @param pos
-   * @param id
    */
   @Override
   public synchronized void onItemSelected(AdapterView<?> parent, View view, int pos, long id) {
@@ -410,5 +412,256 @@ public final class LivePreviewActivity extends Activity
     startCameraSource();
   }
 
+
+  /*视频播放*/
+  private ImageView playOrPauseIv;
+  private SurfaceView videoSuf;
+  private MediaPlayer mPlayer;
+  private SeekBar mSeekBar;
+  private String path;
+  private RelativeLayout rootViewRl;
+  private LinearLayout controlLl;
+  private TextView startTime, endTime;
+  private ImageView forwardButton, backwardButton;
+  private boolean isShow = false;
+
+  public static final int UPDATE_TIME = 0x0001;
+  public static final int HIDE_CONTROL = 0x0002;
+  private Handler mHandler = new Handler() {
+    @Override
+    public void handleMessage(Message msg) {
+      switch (msg.what) {
+        case UPDATE_TIME:
+          updateTime();
+          mHandler.sendEmptyMessageDelayed(UPDATE_TIME, 500);
+          break;
+        case HIDE_CONTROL:
+          hideControl();
+          break;
+      }
+    }
+  };
+
+  private void initData() {
+    path = videoUrl;//这里写上你的视频地址
+  }
+
+  private void initEvent() {
+    playOrPauseIv.setOnClickListener(this);
+    rootViewRl.setOnClickListener(this);
+    rootViewRl.setOnTouchListener(this);
+    forwardButton.setOnClickListener(this);
+    backwardButton.setOnClickListener(this);
+    mSeekBar.setOnSeekBarChangeListener(this);
+  }
+  private void initSurfaceView() {
+    videoSuf = (SurfaceView) findViewById(R.id.surfaceView);
+    videoSuf.setZOrderOnTop(false);
+    videoSuf.getHolder().setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
+    videoSuf.getHolder().addCallback(this);
+  }
+
+  private void initPlayer() {
+    mPlayer = new MediaPlayer();
+    mPlayer.setOnCompletionListener(this);
+    mPlayer.setOnErrorListener(this);
+    mPlayer.setOnInfoListener(this);
+    mPlayer.setOnPreparedListener(this);
+    mPlayer.setOnSeekCompleteListener(this);
+    mPlayer.setOnVideoSizeChangedListener(this);
+    try {
+      //使用手机本地视频
+      mPlayer.setDataSource(path);
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
+  }
+
+  private void initViews() {
+    playOrPauseIv = (ImageView) findViewById(R.id.playOrPause);
+    startTime = (TextView) findViewById(R.id.tv_start_time);
+    endTime = (TextView) findViewById(R.id.tv_end_time);
+    mSeekBar = (SeekBar) findViewById(R.id.tv_progess);
+    controlLl = (LinearLayout) findViewById(R.id.control_ll);
+    forwardButton = (ImageView) findViewById(R.id.tv_forward);
+    backwardButton = (ImageView) findViewById(R.id.tv_backward);
+    rootViewRl = (RelativeLayout) findViewById(R.id.root_rl);
+    rootViewRl.setVisibility(View.INVISIBLE);
+  }
+
+  @Override
+  public void surfaceCreated(SurfaceHolder holder) {
+    mPlayer.setDisplay(holder);
+    mPlayer.prepareAsync();
+  }
+
+  @Override
+  public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
+
+  }
+
+  @Override
+  public void surfaceDestroyed(SurfaceHolder holder) {
+
+  }
+  @Override
+  public void onPrepared(MediaPlayer mp) {
+    startTime.setText(getTimeLine(mp.getCurrentPosition()));
+    endTime.setText(getTimeLine(mp.getDuration()));
+    mSeekBar.setMax(mp.getDuration());
+    mSeekBar.setProgress(mp.getCurrentPosition());
+  }
+  @Override
+  public void onCompletion(MediaPlayer mp) {
+
+  }
+  @Override
+  public boolean onError(MediaPlayer mp, int what, int extra) {
+    return false;
+  }
+
+  @Override
+  public boolean onInfo(MediaPlayer mp, int what, int extra) {
+    return false;
+  }
+  private void play() {
+    if (mPlayer == null) {
+      return;
+    }
+    Log.i("playPath", path);
+    if (mPlayer.isPlaying()) {
+      mPlayer.pause();
+      mHandler.removeMessages(UPDATE_TIME);
+      mHandler.removeMessages(HIDE_CONTROL);
+      playOrPauseIv.setVisibility(View.VISIBLE);
+      playOrPauseIv.setImageResource(android.R.drawable.ic_media_play);
+    } else {
+      mPlayer.start();
+      mHandler.sendEmptyMessageDelayed(UPDATE_TIME, 500);
+      mHandler.sendEmptyMessageDelayed(HIDE_CONTROL, 5000);
+      playOrPauseIv.setVisibility(View.INVISIBLE);
+      playOrPauseIv.setImageResource(android.R.drawable.ic_media_pause);
+    }
+  }
+  @Override
+  public void onSeekComplete(MediaPlayer mp) {
+    //TODO
+  }
+
+  @Override
+  public void onVideoSizeChanged(MediaPlayer mp, int width, int height) {
+
+  }
+  @Override
+  public void onClick(View v) {
+    int id = v.getId();
+    if (id == R.id.tv_backward) {
+      backWard();
+    } else if (id == R.id.tv_forward) {
+      forWard();
+    } else if (id == R.id.playOrPause) {
+      play();
+    } else if (id == R.id.root_rl) {
+      showControl();
+    }
+  }
+  /**
+   * 更新播放时间
+   */
+  private void updateTime() {
+    startTime.setText(getTimeLine(mPlayer.getCurrentPosition()));
+    mSeekBar.setProgress(mPlayer.getCurrentPosition());
+  }
+
+  /**
+   * 隐藏进度条
+   */
+  private void hideControl() {
+    isShow = false;
+    mHandler.removeMessages(UPDATE_TIME);
+    controlLl.animate().setDuration(300).translationY(controlLl.getHeight());
+  }
+  /**
+   * 显示进度条
+   */
+  private void showControl() {
+    if (isShow) {
+      play();
+    }
+    isShow = true;
+    mHandler.removeMessages(HIDE_CONTROL);
+    mHandler.sendEmptyMessage(UPDATE_TIME);
+    mHandler.sendEmptyMessageDelayed(HIDE_CONTROL, 5000);
+    controlLl.animate().setDuration(300).translationY(0);
+  }
+  /**
+   * 设置快进10秒方法
+   */
+  private void forWard(){
+    if(mPlayer != null){
+      int position = mPlayer.getCurrentPosition();
+      mPlayer.seekTo(position + 10000);
+    }
+  }
+
+  /**
+   * 设置快退10秒的方法
+   */
+  public void backWard(){
+    if(mPlayer != null){
+      int position = mPlayer.getCurrentPosition();
+      if(position > 10000){
+        position-=10000;
+      }else{
+        position = 0;
+      }
+      mPlayer.seekTo(position);
+    }
+  }
+
+  //OnSeekBarChangeListener
+  @Override
+  public void onProgressChanged(SeekBar seekBar, int progress, boolean b) {
+    if(mPlayer != null && b){
+      mPlayer.seekTo(progress);
+    }
+  }
+
+  @Override
+  public void onStartTrackingTouch(SeekBar seekBar) {
+  }
+
+  @Override
+  public void onStopTrackingTouch(SeekBar seekBar) {
+
+  }
+
+  @Override
+  public boolean onTouch(View view, MotionEvent motionEvent) {
+    return false;
+  }
+
+  public String getTimeLine(int time){
+    if(time == 0){
+      return "00:00";
+    }else {
+      int second = time / 1000;
+      int second2 = second % 60;
+      int minute = second / 60;
+      String minuteStr = "";
+      if(minute < 10){
+        minuteStr = "0" + minute;
+      }else{
+        minuteStr = "" + minute;
+      }
+      String secondStr = "";
+      if(second2 < 10){
+        secondStr = "0" + second2;
+      }else{
+        secondStr = "" + second2;
+      }
+      return minuteStr + ":" + secondStr;
+    }
+  }
 
 }

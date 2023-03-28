@@ -6,4 +6,6 @@
         android:bottomLeftRadius="16dp"
         android:topLeftRadius="16dp"
         android:topRightRadius="16dp" />
+    <size android:height="60dp"
+          android:width="100dp"/>
 </shape>

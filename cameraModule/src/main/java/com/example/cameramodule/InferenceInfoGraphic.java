@@ -73,13 +73,13 @@ public class InferenceInfoGraphic extends GraphicOverlay.Graphic {
     }
     // Draw FPS (if valid) and inference latency
     if (framesPerSecond != null) {
-      canvas.drawText(
-          "FPS帧率  " + framesPerSecond + "  单帧处理时长  " + frameLatency + " ms",
-          x,
-          y + TEXT_SIZE,
-          textPaint);
+      //canvas.drawText(
+      //    "FPS帧率  " + framesPerSecond + "  单帧处理时长  " + frameLatency + " ms",
+      //    x,
+      //    y + TEXT_SIZE,
+      //    textPaint);
     } else {
-      canvas.drawText("单帧处理时长  " + frameLatency + " ms", x, y + TEXT_SIZE, textPaint);
+      //canvas.drawText("单帧处理时长  " + frameLatency + " ms", x, y + TEXT_SIZE, textPaint);
     }
     //canvas.drawText("检测时长: " + detectorLatency + " ms", x, y + TEXT_SIZE * 2, textPaint);
   }

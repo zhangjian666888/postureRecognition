@@ -18,6 +18,7 @@ package com.example.cameramodule.java.posedetector;
 
 import android.content.Context;
 import android.util.Log;
+import android.widget.TextView;
 import androidx.annotation.NonNull;
 import com.google.android.gms.tasks.Task;
 import com.google.android.odml.image.MlImage;
@@ -52,6 +53,8 @@ public class PoseDetectorProcessor
   private final Executor classificationExecutor;
   private String modelType;
   private Integer num;
+  private TextView totalText;
+  private TextView numText;
 
   private PoseClassifierProcessor poseClassifierProcessor;
   /** Internal class to hold Pose and classification results. */
@@ -75,15 +78,17 @@ public class PoseDetectorProcessor
   }
 
   public PoseDetectorProcessor(
-      Context context,
-      PoseDetectorOptionsBase options,
-      boolean showInFrameLikelihood,
-      boolean visualizeZ,
-      boolean rescaleZForVisualization,
-      boolean runClassification,
-      boolean isStreamMode,
-      String modelType,
-      Integer num) {
+          Context context,
+          PoseDetectorOptionsBase options,
+          boolean showInFrameLikelihood,
+          boolean visualizeZ,
+          boolean rescaleZForVisualization,
+          boolean runClassification,
+          boolean isStreamMode,
+          String modelType,
+          Integer num,
+          TextView numText,
+          TextView totalText) {
     super(context);
     this.showInFrameLikelihood = showInFrameLikelihood;
     this.visualizeZ = visualizeZ;
@@ -94,6 +99,8 @@ public class PoseDetectorProcessor
     this.context = context;
     this.modelType = modelType;
     this.num = num;
+    this.numText = numText;
+    this.totalText = totalText;
     classificationExecutor = Executors.newSingleThreadExecutor();
   }
 
@@ -116,7 +123,7 @@ public class PoseDetectorProcessor
                 if (poseClassifierProcessor == null) {
                   poseClassifierProcessor = new PoseClassifierProcessor(context, isStreamMode, modelType);
                 }
-                classificationResult = poseClassifierProcessor.getPoseResult(context, pose, num);
+                classificationResult = poseClassifierProcessor.getPoseResult(context, pose, num, numText, totalText);
               }
               return new PoseWithClassification(pose, classificationResult);
             });
@@ -135,7 +142,7 @@ public class PoseDetectorProcessor
                 if (poseClassifierProcessor == null) {
                   poseClassifierProcessor = new PoseClassifierProcessor(context, isStreamMode, modelType);
                 }
-                classificationResult = poseClassifierProcessor.getPoseResult(context, pose, num);
+                classificationResult = poseClassifierProcessor.getPoseResult(context, pose, num, numText, totalText);
               }
               return new PoseWithClassification(pose, classificationResult);
             });
