@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:state_checked="true">
+        <layer-list >
+            <item >
+                <shape android:shape="rectangle">
+                    <padding android:top="8dp" android:bottom="8dp" android:left="8dp" android:right="8dp"/>
+                    <stroke android:width="2dp"  android:color="@color/shs"/>
+                    <corners android:radius="10dp"/>
+                    <size android:height="40dp" android:width="40dp"/>
+                    <solid android:color="@color/shs"/>
+                </shape>
+            </item>
+            <item android:drawable="@drawable/camera_switch_line_white"/>
+        </layer-list>
+    </item>
+
+    <item android:state_checked="false">
+        <layer-list >
+            <item >
+                <shape android:shape="rectangle">
+                    <padding android:top="8dp" android:bottom="8dp" android:left="8dp" android:right="8dp"/>
+                    <stroke android:width="2dp" android:color="@color/white"/>
+                    <corners android:radius="10dp"/>
+                    <size android:height="40dp" android:width="40dp"/>
+                    <solid android:color="@color/white"/>
+                </shape>
+            </item>
+            <item android:drawable="@drawable/camera_switch_line_black"/>
+        </layer-list>
+    </item>
+</selector>

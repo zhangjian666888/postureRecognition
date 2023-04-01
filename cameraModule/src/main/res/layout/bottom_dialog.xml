@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+  <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+          android:layout_width="match_parent"
+          android:layout_height="300dp"
+          android:background="@drawable/tc_background"
+          android:orientation="vertical"
+          android:paddingBottom="20dp"
+          android:paddingLeft="22.5dp"
+          android:paddingRight="22.5dp"
+          android:paddingTop="20dp"
+          >
+
+    <Button
+            android:layout_width="match_parent"
+            android:layout_height="42dp"
+            android:gravity="center"
+            android:textColor="@color/gray"
+            android:background="@color/white"
+            android:text="您的训练记录本次不做记录，您确定要退出吗？"
+            android:textSize="14sp" />
+
+    <Button
+            android:id="@+id/confirmButton"
+            android:layout_width="match_parent"
+            android:layout_height="42dp"
+            android:layout_marginTop="16dp"
+            android:gravity="center"
+            android:textColor="@color/red"
+            android:background="@color/white"
+            android:text="确定"
+            android:textSize="18sp" />
+
+    <Button
+            android:id="@+id/btn_cancel"
+            android:layout_width="match_parent"
+            android:layout_height="42dp"
+            android:layout_marginTop="16dp"
+            android:gravity="center"
+            android:textColor="@color/black"
+            android:background="@color/white"
+            android:text="取消"
+            android:textSize="18sp" />
+  </LinearLayout>
