@@ -23,7 +23,7 @@ public class RepetitionCounter {
   // These thresholds can be tuned in conjunction with the Top K values in {@link PoseClassifier}.
   // The default Top K value is 10 so the range here is [0-10].
   //默认进入最大阈值
-  private static final float DEFAULT_ENTER_THRESHOLD = 6f;
+  private static final float DEFAULT_ENTER_THRESHOLD = 5f;
   //默认退出最大阈值
   private static final float DEFAULT_EXIT_THRESHOLD = 4f;
   //动作名称 xxx_up  xxx_down

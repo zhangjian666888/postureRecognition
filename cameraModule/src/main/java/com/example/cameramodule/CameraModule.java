@@ -39,6 +39,7 @@ public class CameraModule extends UniModule {
             intent.putExtra("actionName", options.getString("actionName"));
             intent.putExtra("num", options.getString("num"));
             intent.putExtra("videoUrl", options.getString("videoUrl"));
+            intent.putExtra("actionDsc", options.getString("actionDsc"));
             ((Activity)mUniSDKInstance.getContext()).startActivityForResult(intent, REQUEST_CODE);
         }
     }

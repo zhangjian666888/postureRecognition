@@ -11,8 +11,7 @@
           android:id="@+id/preview_view"
           android:layout_width="match_parent"
           android:layout_height="match_parent"
-          app:layout_constraintTop_toTopOf="parent"
-  />
+          app:layout_constraintTop_toTopOf="parent"/>
 
   <com.example.cameramodule.GraphicOverlay
           android:id="@+id/graphic_overlay"
@@ -21,6 +20,42 @@
           app:layout_constraintTop_toTopOf="@id/preview_view"
           app:layout_constraintStart_toStartOf="parent"/>
 
+  <ImageView
+          android:id="@+id/bodyFouce"
+          android:layout_width="260dp"
+          android:layout_height="560dp"
+          android:background="@drawable/img_body_fouce"
+          app:layout_constraintBottom_toBottomOf="parent"
+          app:layout_constraintLeft_toLeftOf="parent"
+          app:layout_constraintRight_toRightOf="parent"
+          app:layout_constraintTop_toTopOf="parent"
+          tools:ignore="MissingConstraints"/>
+
+  <ImageView
+          android:id="@+id/bodySuccess"
+          android:layout_width="260dp"
+          android:layout_height="560dp"
+          android:background="@drawable/img_body_success"
+          app:layout_constraintBottom_toBottomOf="parent"
+          app:layout_constraintLeft_toLeftOf="parent"
+          app:layout_constraintRight_toRightOf="parent"
+          app:layout_constraintTop_toTopOf="parent"
+          android:visibility="invisible"
+          tools:ignore="MissingConstraints"/>
+
+  <ImageView
+          android:id="@+id/bodyNormal"
+          android:layout_width="260dp"
+          android:layout_height="560dp"
+          android:background="@drawable/img_body_normal"
+          app:layout_constraintBottom_toBottomOf="parent"
+          app:layout_constraintLeft_toLeftOf="parent"
+          app:layout_constraintRight_toRightOf="parent"
+          app:layout_constraintTop_toTopOf="parent"
+          android:visibility="invisible"
+          tools:ignore="MissingConstraints"/>
+
+  <!--顶部的按钮-->
   <RelativeLayout
           android:id="@id/control"
           android:layout_width="match_parent"
@@ -28,170 +63,116 @@
           android:background="#000"
           app:layout_constraintTop_toTopOf="parent"
           app:layout_constraintEnd_toEndOf="parent">
-    <Button
+
+    <ImageButton
             android:id="@+id/videoButton"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:background="@layout/video_button_style"
+            android:layout_width="25dp"
+            android:layout_height="25dp"
+            android:background="@drawable/actionsvg"
+            android:layout_marginLeft="10dp"
+            android:layout_centerVertical="true"/>
+
+    <ImageButton
+            android:id="@+id/openActionDsc"
+            android:layout_width="25dp"
+            android:layout_height="25dp"
+            android:background="@drawable/actiondsc"
+            android:layout_alignParentRight="true"
+            android:layout_marginRight="10dp"
             android:layout_centerVertical="true"/>
 
   </RelativeLayout>
 
   <TextView
           android:id="@+id/numText"
-          android:layout_width="100dp"
-          android:layout_height="60dp"
+          android:layout_width="120dp"
+          android:layout_height="70dp"
           app:layout_constraintTop_toBottomOf="@+id/control"
           app:layout_constraintRight_toRightOf="@+id/control"
-          android:layout_marginTop="20dp"
-          android:layout_marginRight="30dp"
+          android:layout_marginTop="10dp"
+          android:layout_marginRight="20dp"
           android:textColor="#FEFCFC"
-          android:textAlignment="center"
           android:textStyle="bold"
+          android:textAlignment="center"
           android:textSize="50dp"
           android:background="@drawable/list_item_background"
+          android:alpha="0.8"
           tools:ignore="MissingConstraints"/>
 
   <TextView
           android:id="@+id/totalText"
-          android:layout_width="100dp"
-          android:layout_height="60dp"
+          android:layout_width="120dp"
+          android:layout_height="70dp"
           app:layout_constraintTop_toBottomOf="@+id/numText"
           app:layout_constraintRight_toRightOf="@+id/control"
           android:layout_marginTop="10dp"
-          android:layout_marginRight="30dp"
+          android:layout_marginRight="20dp"
           android:textColor="#FEFCFC"
           android:textAlignment="center"
           android:textStyle="bold"
           android:textSize="40dp"
           tools:ignore="MissingConstraints"/>
 
+  <!-- 弹出文字 -->
+  <TextView
+          android:id="@+id/tkText"
+          android:layout_width="300dp"
+          android:layout_height="wrap_content"
+          android:textAlignment="center"
+          android:textColor="#FFFFFF"
+          android:padding="15dp"
+          android:textSize="15dp"
+          android:text="\n互动小提示\n\n将手机支起来，调整屏幕角度，全身和双脚出现在屏幕中\n"
+          android:layout_marginBottom="80dp"
+          android:background="@drawable/tk_textview"
+          android:alpha="0.9"
+          app:layout_constraintBottom_toTopOf="@+id/bottomMenu"
+          app:layout_constraintEnd_toEndOf="parent"
+          app:layout_constraintStart_toStartOf="parent"
+          tools:ignore="MissingConstraints"/>
+
+  <!--下面的按钮-->
   <RelativeLayout
+          android:id="@+id/bottomMenu"
           android:layout_width="match_parent"
           android:layout_height="70dp"
           android:orientation="horizontal"
           android:background="#000"
           app:layout_constraintBottom_toBottomOf="parent">
 
-    <Button
-            android:id="@+id/backBtn"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:background="@layout/back_style"
-            android:layout_alignParentRight="true"
-            android:layout_centerVertical="true"/>
 
     <ToggleButton
             android:id="@+id/facing_switch"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:background="@layout/toggle_style"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:background="@drawable/toggle_style"
             android:layout_centerVertical="true"
-            android:checked="false"
+            android:layout_marginLeft="10dp"
+            android:checked="true"
             android:textOff=""
             android:textOn=""/>
+
+    <ToggleButton
+            android:id="@+id/backBtn"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:background="@drawable/back_style"
+            android:layout_alignParentRight="true"
+            android:layout_centerVertical="true"
+            android:layout_marginRight="10dp"
+            android:checked="true"
+            android:textOff=""
+            android:textOn=""/>
+
   </RelativeLayout>
 
+  <!-- 视频播放 -->
+  <include layout="@layout/activity_video"/>
 
-<!-- 视频播放 -->
-  <RelativeLayout
-          android:id="@+id/root_rl"
-          android:layout_width="350dp"
-          android:layout_height="450dp"
-          android:background="#000000"
-          app:layout_constraintBottom_toBottomOf="parent"
-          app:layout_constraintLeft_toLeftOf="parent"
-          app:layout_constraintRight_toRightOf="parent"
-          app:layout_constraintTop_toTopOf="parent"
-          tools:ignore="MissingConstraints">
+  <!--打卡-->
+  <include layout="@layout/activity_report"/>
 
-    <SurfaceView
-            android:id="@+id/surfaceView"
-            android:layout_width="match_parent"
-            android:layout_height="450dp" />
-
-    <ImageView
-            android:id="@+id/backVideo"
-            android:layout_width="60dp"
-            android:layout_height="60dp"
-            android:src="@drawable/close_circle_fill"
-            android:layout_alignParentRight="true"/>
-
-    <ImageView
-            android:id="@+id/playOrPause"
-            android:layout_width="60dp"
-            android:layout_height="60dp"
-            android:layout_centerInParent="true"
-            android:src="@android:drawable/ic_media_play"/>
-    <LinearLayout
-            android:id="@+id/control_ll"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_alignParentBottom="true"
-            android:background="#595858"
-            android:orientation="vertical">
-
-      <RelativeLayout
-              android:layout_width="match_parent"
-              android:layout_height="wrap_content"
-              android:layout_marginLeft="10dp"
-              android:layout_marginRight="10dp"
-              android:orientation="horizontal"
-              android:paddingBottom="5dp">
-
-        <TextView
-                android:id="@+id/tv_start_time"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_alignParentLeft="true"
-                android:layout_marginLeft="30dp"
-                android:text="00.00"
-                android:textColor="#ffffff"/>
-        <TextView
-                android:id="@+id/tv_separate_time"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_toRightOf="@+id/tv_start_time"
-                android:layout_marginLeft="1dp"
-                android:text="/"
-                android:textColor="#ffffff"/>
-        <TextView
-                android:id="@+id/tv_end_time"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_toRightOf="@+id/tv_separate_time"
-                android:layout_marginLeft="1dp"
-                android:text="00.00"
-                android:textColor="#ffffff"/>
-        <ImageView
-                android:id="@+id/tv_backward"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_below="@+id/tv_start_time"
-                android:layout_alignParentLeft="true"
-                android:layout_marginLeft="1dp"
-                android:src="@android:drawable/ic_media_rew"/>
-
-        <SeekBar
-                android:id="@+id/tv_progess"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_toRightOf="@+id/tv_backward"
-                android:layout_toLeftOf="@+id/tv_forward"
-                android:layout_below="@+id/tv_start_time"/>
-
-        <ImageView
-                android:id="@+id/tv_forward"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_below="@+id/tv_start_time"
-                android:layout_alignParentRight="true"
-                android:layout_marginRight="1dp"
-                android:src="@android:drawable/ic_media_ff"/>
-
-      </RelativeLayout>
-
-    </LinearLayout>
-  </RelativeLayout>
+  <!-- 动作要领弹框 -->
+  <include layout="@layout/activity_essential_of_exercise"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

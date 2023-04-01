@@ -17,14 +17,14 @@
 package com.example.cameramodule.java.posedetector.classification;
 
 import android.content.Context;
-import android.graphics.fonts.Font;
-import android.graphics.fonts.FontStyle;
 import android.os.Looper;
 import android.util.Log;
+import android.view.View;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import androidx.annotation.WorkerThread;
-import com.example.cameramodule.R;
-import com.example.cameramodule.java.PlayMusic;
+import com.example.cameramodule.java.LivePreviewActivity;
+import com.example.cameramodule.java.model.Observer;
 import com.google.android.gms.common.util.CollectionUtils;
 import com.google.common.base.Preconditions;
 import com.google.mlkit.vision.pose.Pose;
@@ -33,7 +33,8 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.*;
-import java.util.stream.Collectors;
+
+import static com.example.cameramodule.java.LivePreviewActivity.*;
 
 /**
  * 接受Pose流来进行分类和Rep计数
@@ -63,7 +64,8 @@ public class PoseClassifierProcessor {
   public static Map<String, List<Float>> scoreMap = new HashMap<>();
   private Map<String, List<Float>> tmpMap = new HashMap<>();
   private String nowAction = "up";
-
+  public static boolean flag = false;
+  private int initNum = 0;
   /**
    * 实例化
    * 必须传入当前的上下文Context和是否为流模式
@@ -152,16 +154,20 @@ public class PoseClassifierProcessor {
       classification = emaSmoothing.getSmoothedResult(classification);
       //如果没有pose被检测到则提前返回，不更新repCounter
       if (pose.getAllPoseLandmarks().isEmpty()) {
-        if("".equals(lastRepResult)){
-          lastRepResult = String.format(
-                  Locale.US, "%d / %d reps", 0, num);
-        }
         result.add(lastRepResult);
-        numText.setText("0");
+        numText.setText(completeNum+"");
         totalText.setText("/"+num+"");
-        //Log.i(TAG, "PoseClassifierProcessor->getPoseResult->result：" + result.toString());
+        if(initNum == 0){
+          Observer.setBodyFlag(true);
+        }
+        flag = true;
         return result;
       }
+      if(initNum == 0 && pose.getAllPoseLandmarks().size() == 33){
+        Observer.setBodyFlag(false);
+        initNum ++;
+      }
+      flag = false;
       //遍历每一个类的repCounter
       for (RepetitionCounter repCounter : repCounters) {
         int repsBefore = repCounter.getNumRepeats();
@@ -175,13 +181,42 @@ public class PoseClassifierProcessor {
           //className: repsAfter reps
           double total = Double.parseDouble(num + "");
           if(repsAfter / total >= 0.5 && repsAfter / total < 0.6){
-            PlayMusic.playUp();
+            if(mediaReadyPlayerAdpater != null){
+              if(mediaReadyPlayerAdpater.isPlaying()){
+                mediaReadyPlayerAdpater.pause();
+              }
+            }
+            if(mediaDetectingPortraitPlayerAdpater != null){
+              if(mediaDetectingPortraitPlayerAdpater.isPlaying()){
+                mediaDetectingPortraitPlayerAdpater.pause();
+              }
+            }
+            if(mediaComplatePlayerAdpater != null){
+              if(mediaComplatePlayerAdpater.isPlaying()){
+                mediaComplatePlayerAdpater.pause();
+              }
+            }
+            playHalfFinishMusic(context);
           }
           if(repsAfter == num){
-            PlayMusic.playComplete();
+            if(mediaReadyPlayerAdpater != null){
+              if(mediaReadyPlayerAdpater.isPlaying()){
+                mediaReadyPlayerAdpater.pause();
+              }
+            }
+            if(mediaDetectingPortraitPlayerAdpater != null){
+              if(mediaDetectingPortraitPlayerAdpater.isPlaying()){
+                mediaDetectingPortraitPlayerAdpater.pause();
+              }
+            }
+            if(mediaHalfFinishPlayerAdpater != null){
+              if(mediaHalfFinishPlayerAdpater.isPlaying()){
+                mediaHalfFinishPlayerAdpater.pause();
+              }
+            }
+            playComplateMusic(context);
           }
           if(repsAfter > num){
-            completeNum = repsAfter;
             lastRepResult = String.format(
                     Locale.US, "%d / %d", num, num);
             numText.setText(num+"");
@@ -193,6 +228,7 @@ public class PoseClassifierProcessor {
             lastRepResult = String.format(
                     Locale.US, "%d / %d", repsAfter, num);
           }
+          Observer.setComplateNum(repsAfter);
           break;
         }
       }

@@ -17,45 +17,51 @@
 package com.example.cameramodule.java;
 
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.app.Dialog;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.ActivityInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
-import android.media.MediaPlayer;
+import android.graphics.Color;
+import android.graphics.Paint;
+import android.media.*;
 import android.net.Uri;
-import android.os.Bundle;
-import android.os.Environment;
-import android.os.Handler;
-import android.os.Message;
+import android.os.*;
+import android.text.Html;
 import android.util.Log;
-import android.view.MotionEvent;
-import android.view.SurfaceHolder;
-import android.view.SurfaceView;
-import android.view.View;
+import android.view.*;
 import android.widget.*;
 import android.widget.AdapterView.OnItemSelectedListener;
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.app.ActivityCompat.OnRequestPermissionsResultCallback;
 import androidx.core.content.ContextCompat;
 import com.alibaba.fastjson.JSONObject;
 import com.example.cameramodule.*;
+import com.example.cameramodule.java.model.Observer;
+import com.example.cameramodule.java.music.OnPrepareCompletedListener;
+import com.example.cameramodule.java.music.impl.MediaPlayerAdpater;
 import com.example.cameramodule.java.posedetector.PoseDetectorProcessor;
 import com.example.cameramodule.java.posedetector.classification.PoseClassifierProcessor;
 import com.example.cameramodule.preference.PreferenceUtils;
 import com.google.android.gms.common.annotation.KeepName;
 import com.google.mlkit.vision.pose.PoseDetectorOptionsBase;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.io.InputStream;
+import java.util.*;
+import java.util.concurrent.Executor;
+
+import static android.widget.RelativeLayout.CENTER_IN_PARENT;
 
 /** Live preview demo for ML Kit APIs. */
 //ML Kit api的实时预览演示
 @KeepName
-public final class LivePreviewActivity extends Activity
-        implements OnRequestPermissionsResultCallback,
+public final class LivePreviewActivity extends AppCompatActivity
+implements OnRequestPermissionsResultCallback,
         OnItemSelectedListener,
         CompoundButton.OnCheckedChangeListener,
         SurfaceHolder.Callback,
@@ -81,35 +87,38 @@ public final class LivePreviewActivity extends Activity
   //默认模型
   private String selectedModel = POSE_DETECTION;
   private Integer num = 10;
-  private Button backBtn;
-  private Button videoBtn;
+  private ToggleButton backBtn;
+  private ImageButton videoBtn;
   private ImageView backVideo;
-  private VideoView videoView;
   private TextView totalText;
   private TextView numText;
-  MediaController mediaController;
   private String videoUrl = "";
+  private Timer timer;
+
+  private RelativeLayout reportView;
+  private TextView useTimeNum;
+  private Button punchcardButton;
+  private TextView titleText;
+  private TextView complateNum;
+  private long startTimeDate;
+  private RelativeLayout quitLayout;
+  private Button confirmButton;
+  private Button abolishButton;
+  private ImageView bodyFouce;
+  private ImageView bodySuccess;
+  private ImageView bodyNormal;
+  private String actionDsc = "";
+  private ImageView backActionDsc;
+  private RelativeLayout actionDscLayout;
+  private TextView actionDscText;
+  private ImageButton openActionDsc;
+
+
   @Override
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
     setContentView(R.layout.activity_vision_live_preview);
-
-    //文本框
-    numText = (TextView)findViewById(R.id.numText);
-    totalText = (TextView)findViewById(R.id.totalText);
-
-    preview = findViewById(R.id.preview_view);
-    if (preview == null) {
-      //Log.d(TAG, "Preview is null");
-    }
-    graphicOverlay = findViewById(R.id.graphic_overlay);
-    if (graphicOverlay == null) {
-      //Log.d(TAG, "graphicOverlay is null");
-    }
-
-    ToggleButton facingSwitch = findViewById(R.id.facing_switch);
-    facingSwitch.setOnCheckedChangeListener(this);
-
+    //接收传过得参数
     Intent intent1 = getIntent();
     if(intent1 != null){
       selectedModel = intent1.getStringExtra("actionName");
@@ -117,40 +126,73 @@ public final class LivePreviewActivity extends Activity
         num = Integer.parseInt(intent1.getStringExtra("num"));
       }
       videoUrl = intent1.getStringExtra("videoUrl");
-      //videoUrl = "http://43.143.181.73/app/1ac086e2-4759-45ec-84c4-1c68d1291a7016672734210002022-11-01.mp4";
+      actionDsc = intent1.getStringExtra("actionDsc");
     }
-
+    preview = findViewById(R.id.preview_view);
+    graphicOverlay = findViewById(R.id.graphic_overlay);
+    //文本框
+    numText = (TextView)findViewById(R.id.numText);
+    totalText = (TextView)findViewById(R.id.totalText);
+    //创建相机
     if (allPermissionsGranted()) {
       //默认选择第一个检测类型
       createCameraSource(selectedModel, num);
     } else {
       getRuntimePermissions();
     }
-
-    PlayMusic.loadResource();
-
-    backBtn = (Button) findViewById(R.id.backBtn);
+    //前后置摄像头切换按钮
+    ToggleButton facingSwitch = findViewById(R.id.facing_switch);
+    facingSwitch.setOnCheckedChangeListener(this);
+    //返回按钮
+    root = (LinearLayout) LayoutInflater.from(this).inflate(R.layout.bottom_dialog, null);
+    //初始化视图
+    mCameraDialog = new Dialog(this, R.style.BottomDialog);
+    mCameraDialog.setContentView(root);
+    Window dialogWindow = mCameraDialog.getWindow();
+    dialogWindow.setGravity(Gravity.BOTTOM);
+    WindowManager.LayoutParams lp = dialogWindow.getAttributes(); // 获取对话框当前的参数值
+    lp.x = 0; // 新位置X坐标
+    lp.y = 0; // 新位置Y坐标
+    lp.width = (int) getResources().getDisplayMetrics().widthPixels; // 宽度
+    root.measure(0, 0);
+    lp.height = root.getMeasuredHeight();
+    lp.alpha = 9f; // 透明度
+    dialogWindow.setAttributes(lp);
+    backBtn = (ToggleButton) findViewById(R.id.backBtn);
     backBtn.setOnClickListener(
-        v->{
-          backData();
-          finish();
-        }
+            v->{
+              setDialog();
+            }
     );
-
-    //视频播放2
+    abolishButton = (Button) root.findViewById(R.id.btn_cancel);
+    abolishButton.setOnClickListener(
+          v->{
+            mCameraDialog.hide();
+          }
+    );
+    confirmButton = (Button) root.findViewById(R.id.confirmButton);
+    confirmButton.setOnClickListener(
+          v->{
+            timer.cancel();
+            PoseClassifierProcessor.flag = false;
+            backData();
+            finish();
+          }
+    );
+    //视频播放初始化
     initViews();
     initData();
     initSurfaceView();
     initPlayer();
     initEvent();
-
-    videoBtn = (Button) findViewById(R.id.videoButton);
+    //显示视频按钮
+    videoBtn = (ImageButton) findViewById(R.id.videoButton);
     videoBtn.setOnClickListener(
           v->{
             rootViewRl.setVisibility(View.VISIBLE);
           }
     );
-
+    //隐藏视频按钮
     backVideo = (ImageView) findViewById(R.id.backVideo);
     backVideo.setOnClickListener(
           v->{
@@ -158,10 +200,214 @@ public final class LivePreviewActivity extends Activity
             mPlayer.seekTo(0);
           }
     );
+    //定时播放人像检测
+    timer = new Timer();
+    timer.schedule(new TimerTask() {
+      @Override
+      public void run() {
+        if(PoseClassifierProcessor.flag){
+          if(mediaReadyPlayerAdpater != null){
+            if(mediaReadyPlayerAdpater.isPlaying()){
+              mediaReadyPlayerAdpater.pause();
+            }
+          }
+          if(mediaComplatePlayerAdpater != null){
+            if(mediaComplatePlayerAdpater.isPlaying()){
+              mediaComplatePlayerAdpater.pause();
+            }
+          }
+          if(mediaHalfFinishPlayerAdpater != null){
+            if(mediaHalfFinishPlayerAdpater.isPlaying()){
+              mediaHalfFinishPlayerAdpater.pause();
+            }
+          }
+          playDetectingPortraitMusic(LivePreviewActivity.this);
+        }
+      }
+    },0,60000);
+    //播放开始的音乐
+    playReadyMusic(this);
+    //消息弹框
+    TextView messageText = (TextView) findViewById(R.id.tkText);
+    Handler handler = new Handler();
+    handler.postDelayed(new Runnable() {
+      @Override
+      public void run() {
+        messageText.setVisibility(View.INVISIBLE);
+      }
+    }, 5000);
+    //动作要领弹框
+    openActionDsc = (ImageButton) findViewById(R.id.openActionDsc);
+    actionDscLayout = (RelativeLayout) findViewById(R.id.actionDscLayout);
+    backActionDsc = (ImageView) findViewById(R.id.backActionDsc);
+    actionDscText = (TextView) findViewById(R.id.actionDscText);
+    if(actionDsc != null && !"".equals(actionDsc)){
+      actionDscText.setText(Html.fromHtml(actionDsc));
+    }
+    openActionDsc.setOnClickListener(
+            v->{
+              actionDscLayout.setVisibility(View.VISIBLE);
+            }
+    );
+    backActionDsc.setOnClickListener(
+            v->{
+              actionDscLayout.setVisibility(View.INVISIBLE);
+            }
+    );
+    //报告弹框
+    reportView = (RelativeLayout) findViewById(R.id.report);
+    reportView.setVisibility(View.INVISIBLE);
+    //动作标题
+    titleText = (TextView) findViewById(R.id.titleText);
+    titleText.setText(selectedModel);
+    //动作完成数
+    complateNum = (TextView) findViewById(R.id.complateNum);
+    complateNum.setText(num+"");
+    //使用时间
+    useTimeNum = (TextView) findViewById(R.id.useTimeNum);
+    punchcardButton = (Button) findViewById(R.id.punchcard);
+    punchcardButton.setOnClickListener(
+        v->{
+          timer.cancel();
+          PoseClassifierProcessor.flag = false;
+          reportView.setVisibility(View.INVISIBLE);
+          backData();
+          finish();
+        }
+    );
+    startTimeDate = System.currentTimeMillis();
+    //完成动作的监控
+    Handler handler2 = new Handler();
+    Observer.setComplateNumOnChangeListener(new Observer.OnChangeListener() {
+      @Override
+      public void onChange() {
+        if(Observer.getComplateNum() == num){
+          handler2.post(new Runnable() {
+            @Override
+            public void run() {
+              long endTime = System.currentTimeMillis();
+              long second = (endTime - startTimeDate) / 1000;
+              useTimeNum.setText((second / 60) + ":" + (second % 60));
+              reportView.setVisibility(View.VISIBLE);
+              backBtn.setVisibility(View.INVISIBLE);
+              videoBtn.setVisibility(View.INVISIBLE);
+            }
+          });
+        }
+      }
+    });
+
+    //人像框的显示隐藏
+    bodyFouce = (ImageView) findViewById(R.id.bodyFouce);
+    bodySuccess = (ImageView) findViewById(R.id.bodySuccess);
+    bodyNormal = (ImageView) findViewById(R.id.bodyNormal);
+    Handler handler3 = new Handler();
+    Observer.setBodyFlagOnChangeListener(new Observer.OnChangeListener() {
+      @Override
+      public void onChange() {
+        if(Observer.isBodyFlag()){
+          handler3.post(new Runnable() {
+            @Override
+            public void run() {
+              bodyFouce.setVisibility(View.VISIBLE);
+              bodySuccess.setVisibility(View.INVISIBLE);
+              bodyNormal.setVisibility(View.INVISIBLE);
+            }
+          });
+        }else {
+          handler3.post(new Runnable() {
+            @Override
+            public void run() {
+              bodyFouce.setVisibility(View.INVISIBLE);
+              bodyNormal.setVisibility(View.INVISIBLE);
+              bodySuccess.setVisibility(View.VISIBLE);
+            }
+          });
+        }
+      }
+    });
+
+  }
+  private LinearLayout root;
+  private  Dialog mCameraDialog;
+  private void setDialog() {
+    mCameraDialog.show();
+  }
+
+  //播放准备音乐
+  public static MediaPlayerAdpater mediaReadyPlayerAdpater;
+  public static void playReadyMusic(Context context){
+    mediaReadyPlayerAdpater = new MediaPlayerAdpater(context);
+    mediaReadyPlayerAdpater.loadMedia(R.raw.ydzb, new OnPrepareCompletedListener() {
+      @Override
+      public void onComplete() {
+        mediaReadyPlayerAdpater.play();
+      }
+    });
+  }
+
+  //播放检测音乐
+  public static MediaPlayerAdpater mediaDetectingPortraitPlayerAdpater;
+  public static void playDetectingPortraitMusic(Context context){
+    mediaDetectingPortraitPlayerAdpater = new MediaPlayerAdpater(context);
+    mediaDetectingPortraitPlayerAdpater.loadMedia(R.raw.rxjc, new OnPrepareCompletedListener() {
+      @Override
+      public void onComplete() {
+        mediaDetectingPortraitPlayerAdpater.play();
+      }
+    });
+  }
+
+  //播放完成音乐
+  public static MediaPlayerAdpater mediaComplatePlayerAdpater;
+  public static void playComplateMusic(Context context){
+    mediaComplatePlayerAdpater = new MediaPlayerAdpater(context);
+    mediaComplatePlayerAdpater.loadMedia(R.raw.ydwc, new OnPrepareCompletedListener() {
+      @Override
+      public void onComplete() {
+        mediaComplatePlayerAdpater.play();
+      }
+    });
+  }
+
+  //播放完成一半时音乐
+  public static MediaPlayerAdpater mediaHalfFinishPlayerAdpater;
+  public static void playHalfFinishMusic(Context context){
+    mediaHalfFinishPlayerAdpater = new MediaPlayerAdpater(context);
+    mediaHalfFinishPlayerAdpater.loadMedia(R.raw.ydybhzys, new OnPrepareCompletedListener() {
+      @Override
+      public void onComplete() {
+        mediaHalfFinishPlayerAdpater.play();
+      }
+    });
+  }
+
+  private void stopAllMusic(){
+    if(mediaReadyPlayerAdpater != null){
+      if(mediaReadyPlayerAdpater.isPlaying()){
+        mediaReadyPlayerAdpater.pause();
+      }
+    }
+    if(mediaDetectingPortraitPlayerAdpater != null){
+      if(mediaDetectingPortraitPlayerAdpater.isPlaying()){
+        mediaDetectingPortraitPlayerAdpater.pause();
+      }
+    }
+    if(mediaComplatePlayerAdpater != null){
+      if(mediaComplatePlayerAdpater.isPlaying()){
+        mediaComplatePlayerAdpater.pause();
+      }
+    }
+    if(mediaHalfFinishPlayerAdpater != null){
+      if(mediaHalfFinishPlayerAdpater.isPlaying()){
+        mediaHalfFinishPlayerAdpater.pause();
+      }
+    }
 
   }
 
   private void backData(){
+    stopAllMusic();
     Intent intent = new Intent();
     JSONObject jsonObject = new JSONObject();
     Integer completeNum = PoseClassifierProcessor.completeNum;
@@ -200,6 +446,7 @@ public final class LivePreviewActivity extends Activity
     setResult(CameraModule.REQUEST_CODE, intent);
     PoseClassifierProcessor.completeNum = 0;
     PoseClassifierProcessor.scoreMap.clear();
+    PoseClassifierProcessor.flag = false;
   }
 
   //选择那个检测类型，创建对应的检测模型
@@ -310,12 +557,13 @@ public final class LivePreviewActivity extends Activity
   protected void onPause() {
     super.onPause();
     preview.stop();
-    backData();
   }
 
   @Override
   public void onDestroy() {
     super.onDestroy();
+    timer.cancel();
+    PoseClassifierProcessor.flag = false;
     if (cameraSource != null) {
       cameraSource.release();
     }
@@ -412,6 +660,13 @@ public final class LivePreviewActivity extends Activity
     startCameraSource();
   }
 
+  @Override
+  public boolean onKeyDown(int keyCode, KeyEvent event) {
+    if (keyCode == KeyEvent.KEYCODE_BACK && event.getRepeatCount() == 0) {
+      return false;
+    }
+    return super.onKeyDown(keyCode, event);
+  }
 
   /*视频播放*/
   private ImageView playOrPauseIv;
@@ -468,7 +723,12 @@ public final class LivePreviewActivity extends Activity
     mPlayer.setOnInfoListener(this);
     mPlayer.setOnPreparedListener(this);
     mPlayer.setOnSeekCompleteListener(this);
-    mPlayer.setOnVideoSizeChangedListener(this);
+    mPlayer.setOnVideoSizeChangedListener(new MediaPlayer.OnVideoSizeChangedListener() {
+      @Override
+      public void onVideoSizeChanged(MediaPlayer mediaPlayer, int width, int height) {
+        changeVideoSize(videoSuf, width, height);
+      }
+    });
     try {
       //使用手机本地视频
       mPlayer.setDataSource(path);
@@ -487,6 +747,30 @@ public final class LivePreviewActivity extends Activity
     backwardButton = (ImageView) findViewById(R.id.tv_backward);
     rootViewRl = (RelativeLayout) findViewById(R.id.root_rl);
     rootViewRl.setVisibility(View.INVISIBLE);
+  }
+
+  public void changeVideoSize(SurfaceView mSurfaceView, int videoWidth, int videoHeight) {
+
+    int surfaceWidth = mSurfaceView.getWidth();
+    int surfaceHeight = mSurfaceView.getHeight();
+    //根据视频尺寸去计算->视频可以在sufaceView中放大的最大倍数。
+    float max;
+    if (getResources().getConfiguration().orientation== ActivityInfo.SCREEN_ORIENTATION_PORTRAIT) {
+      //竖屏模式下按视频宽度计算放大倍数值
+      max = Math.max((float) videoWidth / (float) surfaceWidth,(float) videoHeight / (float) surfaceHeight);
+    } else{
+      //横屏模式下按视频高度计算放大倍数值
+      max = Math.max(((float) videoWidth/(float) surfaceHeight),(float) videoHeight/(float) surfaceWidth);
+    }
+
+    //视频宽高分别/最大倍数值 计算出放大后的视频尺寸
+    videoWidth = (int) Math.ceil((float) videoWidth / max);
+    videoHeight = (int) Math.ceil((float) videoHeight / max);
+
+    //无法直接设置视频尺寸，将计算出的视频尺寸设置到surfaceView 让视频自动填充。
+    RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(videoWidth, videoHeight);
+    layoutParams.addRule(CENTER_IN_PARENT);
+    mSurfaceView.setLayoutParams(layoutParams);
   }
 
   @Override

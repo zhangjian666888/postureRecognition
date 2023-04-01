@@ -409,13 +409,16 @@ public class CameraSource {
   public static List<SizePair> generateValidPreviewSizeList(Camera camera) {
     //调节摄像头的画布尺寸
     Camera.Parameters parameters = camera.getParameters();
-    List<Camera.Size> supportedPreviewSizes1 = parameters.getSupportedPreviewSizes();
-    List<Camera.Size> supportedPictureSizes1 = parameters.getSupportedPictureSizes();
-    int index = supportedPreviewSizes1.size() > 7 ? 6 : supportedPreviewSizes1.size() - 1;
-    List<Camera.Size> supportedPreviewSizes = new ArrayList<>();
-    List<Camera.Size> supportedPictureSizes = new ArrayList<>();
-    supportedPreviewSizes.add(supportedPreviewSizes1.get(index));
-    supportedPictureSizes.add(supportedPictureSizes1.get(index));
+    //List<Camera.Size> supportedPreviewSizes1 = parameters.getSupportedPreviewSizes();
+    //List<Camera.Size> supportedPictureSizes1 = parameters.getSupportedPictureSizes();
+    //int index = supportedPreviewSizes1.size() > 7 ? 6 : supportedPreviewSizes1.size() - 1;
+    //List<Camera.Size> supportedPreviewSizes = new ArrayList<>();
+    //List<Camera.Size> supportedPictureSizes = new ArrayList<>();
+    //supportedPreviewSizes.add(supportedPreviewSizes1.get(index));
+    //supportedPictureSizes.add(supportedPictureSizes1.get(index));
+
+    List<Camera.Size> supportedPreviewSizes = parameters.getSupportedPreviewSizes();
+    List<Camera.Size> supportedPictureSizes = parameters.getSupportedPictureSizes();
     List<SizePair> validPreviewSizes = new ArrayList<>();
     for (Camera.Size previewSize : supportedPreviewSizes) {
       float previewAspectRatio = (float) previewSize.width / (float) previewSize.height;
