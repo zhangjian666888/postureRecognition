@@ -1,40 +1,26 @@
-/*
- * Copyright 2020 Google LLC. All rights reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package com.example.cameramodule.java;
 
-import android.app.Activity;
-import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
-import android.graphics.Color;
-import android.graphics.Paint;
-import android.media.*;
-import android.net.Uri;
-import android.os.*;
+import android.graphics.Outline;
+import android.graphics.Rect;
+import android.media.MediaPlayer;
+import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.text.Html;
+import android.text.method.ScrollingMovementMethod;
 import android.util.Log;
 import android.view.*;
 import android.widget.*;
 import android.widget.AdapterView.OnItemSelectedListener;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.constraintlayout.widget.ConstraintSet;
 import androidx.core.app.ActivityCompat;
 import androidx.core.app.ActivityCompat.OnRequestPermissionsResultCallback;
 import androidx.core.content.ContextCompat;
@@ -49,11 +35,8 @@ import com.example.cameramodule.preference.PreferenceUtils;
 import com.google.android.gms.common.annotation.KeepName;
 import com.google.mlkit.vision.pose.PoseDetectorOptionsBase;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.*;
-import java.util.concurrent.Executor;
 
 import static android.widget.RelativeLayout.CENTER_IN_PARENT;
 
@@ -102,8 +85,8 @@ implements OnRequestPermissionsResultCallback,
   private TextView complateNum;
   private long startTimeDate;
   private RelativeLayout quitLayout;
-  private Button confirmButton;
-  private Button abolishButton;
+  private TextView confirmButton;
+  private TextView abolishButton;
   private ImageView bodyFouce;
   private ImageView bodySuccess;
   private ImageView bodyNormal;
@@ -117,6 +100,9 @@ implements OnRequestPermissionsResultCallback,
   @Override
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
+    //设置全屏
+    this.requestWindowFeature(Window.FEATURE_NO_TITLE);
+    this.getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
     setContentView(R.layout.activity_vision_live_preview);
     //接收传过得参数
     Intent intent1 = getIntent();
@@ -164,13 +150,13 @@ implements OnRequestPermissionsResultCallback,
               setDialog();
             }
     );
-    abolishButton = (Button) root.findViewById(R.id.btn_cancel);
+    abolishButton = (TextView) root.findViewById(R.id.btn_cancel);
     abolishButton.setOnClickListener(
           v->{
             mCameraDialog.hide();
           }
     );
-    confirmButton = (Button) root.findViewById(R.id.confirmButton);
+    confirmButton = (TextView) root.findViewById(R.id.confirmButton);
     confirmButton.setOnClickListener(
           v->{
             timer.cancel();
@@ -206,25 +192,11 @@ implements OnRequestPermissionsResultCallback,
       @Override
       public void run() {
         if(PoseClassifierProcessor.flag){
-          if(mediaReadyPlayerAdpater != null){
-            if(mediaReadyPlayerAdpater.isPlaying()){
-              mediaReadyPlayerAdpater.pause();
-            }
-          }
-          if(mediaComplatePlayerAdpater != null){
-            if(mediaComplatePlayerAdpater.isPlaying()){
-              mediaComplatePlayerAdpater.pause();
-            }
-          }
-          if(mediaHalfFinishPlayerAdpater != null){
-            if(mediaHalfFinishPlayerAdpater.isPlaying()){
-              mediaHalfFinishPlayerAdpater.pause();
-            }
-          }
+          stopAllMusic();
           playDetectingPortraitMusic(LivePreviewActivity.this);
         }
       }
-    },0,60000);
+    },0,10000);
     //播放开始的音乐
     playReadyMusic(this);
     //消息弹框
@@ -241,6 +213,7 @@ implements OnRequestPermissionsResultCallback,
     actionDscLayout = (RelativeLayout) findViewById(R.id.actionDscLayout);
     backActionDsc = (ImageView) findViewById(R.id.backActionDsc);
     actionDscText = (TextView) findViewById(R.id.actionDscText);
+    actionDscText.setMovementMethod(ScrollingMovementMethod.getInstance());
     if(actionDsc != null && !"".equals(actionDsc)){
       actionDscText.setText(Html.fromHtml(actionDsc));
     }
@@ -311,7 +284,6 @@ implements OnRequestPermissionsResultCallback,
             public void run() {
               bodyFouce.setVisibility(View.VISIBLE);
               bodySuccess.setVisibility(View.INVISIBLE);
-              bodyNormal.setVisibility(View.INVISIBLE);
             }
           });
         }else {
@@ -319,10 +291,16 @@ implements OnRequestPermissionsResultCallback,
             @Override
             public void run() {
               bodyFouce.setVisibility(View.INVISIBLE);
-              bodyNormal.setVisibility(View.INVISIBLE);
               bodySuccess.setVisibility(View.VISIBLE);
             }
           });
+          handler3.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+              bodyFouce.setVisibility(View.INVISIBLE);
+              bodySuccess.setVisibility(View.INVISIBLE);
+            }
+          },2000);
         }
       }
     });
@@ -382,7 +360,7 @@ implements OnRequestPermissionsResultCallback,
     });
   }
 
-  private void stopAllMusic(){
+  public static void stopAllMusic(){
     if(mediaReadyPlayerAdpater != null){
       if(mediaReadyPlayerAdpater.isPlaying()){
         mediaReadyPlayerAdpater.pause();
@@ -714,6 +692,20 @@ implements OnRequestPermissionsResultCallback,
     videoSuf.setZOrderOnTop(false);
     videoSuf.getHolder().setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
     videoSuf.getHolder().addCallback(this);
+    videoSuf.setOutlineProvider(new ViewOutlineProvider() {
+      @Override
+      public void getOutline(View view, Outline outline) {
+        Rect rect = new Rect();
+        view.getGlobalVisibleRect(rect);
+        int leftMargin = 0;
+        int topMargin = 0;
+        Rect selfRect = new Rect(leftMargin, topMargin,
+                rect.right - rect.left - leftMargin,
+                rect.bottom - rect.top - topMargin);
+        outline.setRoundRect(selfRect, 50);
+      }
+    });
+    videoSuf.setClipToOutline(true);
   }
 
   private void initPlayer() {
@@ -750,7 +742,6 @@ implements OnRequestPermissionsResultCallback,
   }
 
   public void changeVideoSize(SurfaceView mSurfaceView, int videoWidth, int videoHeight) {
-
     int surfaceWidth = mSurfaceView.getWidth();
     int surfaceHeight = mSurfaceView.getHeight();
     //根据视频尺寸去计算->视频可以在sufaceView中放大的最大倍数。
@@ -771,6 +762,13 @@ implements OnRequestPermissionsResultCallback,
     RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(videoWidth, videoHeight);
     layoutParams.addRule(CENTER_IN_PARENT);
     mSurfaceView.setLayoutParams(layoutParams);
+    ConstraintLayout.LayoutParams cl = new ConstraintLayout.LayoutParams(videoWidth, videoHeight);
+    cl.bottomToBottom = 0;
+    cl.leftToLeft = 0;
+    cl.rightToRight = 0;
+    cl.topToTop = 0;
+    cl.circleRadius = 10;
+    rootViewRl.setLayoutParams(cl);
   }
 
   @Override
@@ -818,12 +816,16 @@ implements OnRequestPermissionsResultCallback,
       mHandler.removeMessages(UPDATE_TIME);
       mHandler.removeMessages(HIDE_CONTROL);
       playOrPauseIv.setVisibility(View.VISIBLE);
+      forwardButton.setVisibility(View.VISIBLE);
+      backwardButton.setVisibility(View.VISIBLE);
       playOrPauseIv.setImageResource(android.R.drawable.ic_media_play);
     } else {
       mPlayer.start();
       mHandler.sendEmptyMessageDelayed(UPDATE_TIME, 500);
       mHandler.sendEmptyMessageDelayed(HIDE_CONTROL, 5000);
       playOrPauseIv.setVisibility(View.INVISIBLE);
+      forwardButton.setVisibility(View.INVISIBLE);
+      backwardButton.setVisibility(View.INVISIBLE);
       playOrPauseIv.setImageResource(android.R.drawable.ic_media_pause);
     }
   }

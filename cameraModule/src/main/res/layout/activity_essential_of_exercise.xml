@@ -23,18 +23,19 @@
 
       <ImageView
               android:id="@+id/backActionDsc"
-              android:layout_width="60dp"
-              android:layout_height="60dp"
+              android:layout_width="30dp"
+              android:layout_height="30dp"
               android:src="@drawable/close_circle_fill"
               android:layout_alignParentRight="true"/>
 
       <TextView
               android:id="@+id/actionDscText"
               android:layout_width="300dp"
-              android:layout_height="370dp"
+              android:layout_height="400dp"
               android:textColor="@color/white"
               android:layout_centerHorizontal="true"
               android:scrollbars="vertical"
+              android:padding="18dp"
               android:layout_below="@+id/backActionDsc"/>
 
   </RelativeLayout>

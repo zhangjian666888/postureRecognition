@@ -28,6 +28,7 @@ import com.example.cameramodule.java.model.Observer;
 import com.google.android.gms.common.util.CollectionUtils;
 import com.google.common.base.Preconditions;
 import com.google.mlkit.vision.pose.Pose;
+import com.google.mlkit.vision.pose.PoseLandmark;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -163,10 +164,6 @@ public class PoseClassifierProcessor {
         flag = true;
         return result;
       }
-      if(initNum == 0 && pose.getAllPoseLandmarks().size() == 33){
-        Observer.setBodyFlag(false);
-        initNum ++;
-      }
       flag = false;
       //遍历每一个类的repCounter
       for (RepetitionCounter repCounter : repCounters) {
@@ -181,52 +178,22 @@ public class PoseClassifierProcessor {
           //className: repsAfter reps
           double total = Double.parseDouble(num + "");
           if(repsAfter / total >= 0.5 && repsAfter / total < 0.6){
-            if(mediaReadyPlayerAdpater != null){
-              if(mediaReadyPlayerAdpater.isPlaying()){
-                mediaReadyPlayerAdpater.pause();
-              }
-            }
-            if(mediaDetectingPortraitPlayerAdpater != null){
-              if(mediaDetectingPortraitPlayerAdpater.isPlaying()){
-                mediaDetectingPortraitPlayerAdpater.pause();
-              }
-            }
-            if(mediaComplatePlayerAdpater != null){
-              if(mediaComplatePlayerAdpater.isPlaying()){
-                mediaComplatePlayerAdpater.pause();
-              }
-            }
+            stopAllMusic();
             playHalfFinishMusic(context);
           }
           if(repsAfter == num){
-            if(mediaReadyPlayerAdpater != null){
-              if(mediaReadyPlayerAdpater.isPlaying()){
-                mediaReadyPlayerAdpater.pause();
-              }
-            }
-            if(mediaDetectingPortraitPlayerAdpater != null){
-              if(mediaDetectingPortraitPlayerAdpater.isPlaying()){
-                mediaDetectingPortraitPlayerAdpater.pause();
-              }
-            }
-            if(mediaHalfFinishPlayerAdpater != null){
-              if(mediaHalfFinishPlayerAdpater.isPlaying()){
-                mediaHalfFinishPlayerAdpater.pause();
-              }
-            }
+            stopAllMusic();
             playComplateMusic(context);
           }
           if(repsAfter > num){
-            lastRepResult = String.format(
-                    Locale.US, "%d / %d", num, num);
+            lastRepResult = String.format(Locale.US, "%d / %d", num, num);
             numText.setText(num+"");
             totalText.setText("/"+num+"");
           }else {
             completeNum = repsAfter;
             numText.setText(repsAfter+"");
             totalText.setText("/"+num+"");
-            lastRepResult = String.format(
-                    Locale.US, "%d / %d", repsAfter, num);
+            lastRepResult = String.format(Locale.US, "%d / %d", repsAfter, num);
           }
           Observer.setComplateNum(repsAfter);
           break;
@@ -271,10 +238,11 @@ public class PoseClassifierProcessor {
         nowAction = maxConfidenceClass;
         tmpMap.clear();
       }
-      String maxConfidenceClassResult = String.format(
-          Locale.US,
-          "%s : %.2f confidence",
-          maxConfidenceClass, confidence);
+      if(initNum == 0 && "up".equals(maxConfidenceClass) && confidence >= 1.0f){
+        Observer.setBodyFlag(false);
+        initNum ++;
+      }
+      String maxConfidenceClassResult = String.format(Locale.US, "%s : %.2f confidence", maxConfidenceClass, confidence);
       result.add(maxConfidenceClassResult);
     }
     //Log.i(TAG, "PoseClassifierProcessor->getPoseResult->result：" + result.toString());

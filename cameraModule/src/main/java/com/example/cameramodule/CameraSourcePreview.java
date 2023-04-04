@@ -18,11 +18,11 @@ package com.example.cameramodule;
 
 import android.content.Context;
 import android.content.res.Configuration;
+import android.graphics.Outline;
+import android.graphics.Rect;
 import android.util.AttributeSet;
 import android.util.Log;
-import android.view.SurfaceHolder;
-import android.view.SurfaceView;
-import android.view.ViewGroup;
+import android.view.*;
 import com.google.android.gms.common.images.Size;
 import com.example.cameramodule.preference.PreferenceUtils;
 

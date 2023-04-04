@@ -151,14 +151,15 @@ public class PoseDetectorProcessor
   protected void onSuccess(
       @NonNull PoseWithClassification poseWithClassification,
       @NonNull GraphicOverlay graphicOverlay) {
-    graphicOverlay.add(
-        new PoseGraphic(
-            graphicOverlay,
-            poseWithClassification.pose,
-            showInFrameLikelihood,
-            visualizeZ,
-            rescaleZForVisualization,
-            poseWithClassification.classificationResult));
+    //将页面化的点去掉
+    //graphicOverlay.add(
+    //    new PoseGraphic(
+    //        graphicOverlay,
+    //        poseWithClassification.pose,
+    //        showInFrameLikelihood,
+    //        visualizeZ,
+    //        rescaleZForVisualization,
+    //        poseWithClassification.classificationResult));
   }
 
   @Override
