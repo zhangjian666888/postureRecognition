@@ -43,17 +43,17 @@
           android:visibility="invisible"
           tools:ignore="MissingConstraints"/>
 
-  <ImageView
-          android:id="@+id/bodyNormal"
-          android:layout_width="260dp"
-          android:layout_height="560dp"
-          android:background="@drawable/img_body_normal"
-          app:layout_constraintBottom_toBottomOf="parent"
-          app:layout_constraintLeft_toLeftOf="parent"
-          app:layout_constraintRight_toRightOf="parent"
-          app:layout_constraintTop_toTopOf="parent"
-          android:visibility="invisible"
-          tools:ignore="MissingConstraints"/>
+<!--  <ImageView-->
+<!--          android:id="@+id/bodyNormal"-->
+<!--          android:layout_width="260dp"-->
+<!--          android:layout_height="560dp"-->
+<!--          android:background="@drawable/img_body_normal"-->
+<!--          app:layout_constraintBottom_toBottomOf="parent"-->
+<!--          app:layout_constraintLeft_toLeftOf="parent"-->
+<!--          app:layout_constraintRight_toRightOf="parent"-->
+<!--          app:layout_constraintTop_toTopOf="parent"-->
+<!--          android:visibility="invisible"-->
+<!--          tools:ignore="MissingConstraints"/>-->
 
   <!--顶部的按钮-->
   <RelativeLayout

@@ -17,6 +17,8 @@
 package com.example.cameramodule.java.posedetector.classification;
 
 import android.content.Context;
+import android.media.AudioManager;
+import android.media.ToneGenerator;
 import android.os.Looper;
 import android.util.Log;
 import android.view.View;
@@ -173,17 +175,17 @@ public class PoseClassifierProcessor {
         //停止了这个动作
         if (repsAfter > repsBefore) {
           //当计数器更新时，播放声音。
-          //ToneGenerator tg = new ToneGenerator(AudioManager.STREAM_NOTIFICATION, 100);
-          //tg.startTone(ToneGenerator.TONE_PROP_BEEP);
           //className: repsAfter reps
           double total = Double.parseDouble(num + "");
           if(repsAfter / total >= 0.5 && repsAfter / total < 0.6){
             stopAllMusic();
             playHalfFinishMusic(context);
-          }
-          if(repsAfter == num){
+          }else if(repsAfter == num){
             stopAllMusic();
             playComplateMusic(context);
+          }else {
+            ToneGenerator tg = new ToneGenerator(AudioManager.STREAM_NOTIFICATION, 100);
+            tg.startTone(ToneGenerator.TONE_PROP_BEEP);
           }
           if(repsAfter > num){
             lastRepResult = String.format(Locale.US, "%d / %d", num, num);

@@ -39,6 +39,7 @@ import java.io.IOException;
 import java.util.*;
 
 import static android.widget.RelativeLayout.CENTER_IN_PARENT;
+import static com.example.cameramodule.java.posedetector.classification.PoseClassifierProcessor.completeNum;
 
 /** Live preview demo for ML Kit APIs. */
 //ML Kit api的实时预览演示
@@ -89,7 +90,7 @@ implements OnRequestPermissionsResultCallback,
   private TextView abolishButton;
   private ImageView bodyFouce;
   private ImageView bodySuccess;
-  private ImageView bodyNormal;
+  //private ImageView bodyNormal;
   private String actionDsc = "";
   private ImageView backActionDsc;
   private RelativeLayout actionDscLayout;
@@ -192,8 +193,10 @@ implements OnRequestPermissionsResultCallback,
       @Override
       public void run() {
         if(PoseClassifierProcessor.flag){
-          stopAllMusic();
-          playDetectingPortraitMusic(LivePreviewActivity.this);
+          if(completeNum < num.intValue()){
+            stopAllMusic();
+            playDetectingPortraitMusic(LivePreviewActivity.this);
+          }
         }
       }
     },0,10000);
@@ -273,7 +276,7 @@ implements OnRequestPermissionsResultCallback,
     //人像框的显示隐藏
     bodyFouce = (ImageView) findViewById(R.id.bodyFouce);
     bodySuccess = (ImageView) findViewById(R.id.bodySuccess);
-    bodyNormal = (ImageView) findViewById(R.id.bodyNormal);
+    //bodyNormal = (ImageView) findViewById(R.id.bodyNormal);
     Handler handler3 = new Handler();
     Observer.setBodyFlagOnChangeListener(new Observer.OnChangeListener() {
       @Override
