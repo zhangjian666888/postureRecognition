@@ -67,8 +67,8 @@ public class PoseClassifierProcessor {
   public static Map<String, List<Float>> scoreMap = new HashMap<>();
   private Map<String, List<Float>> tmpMap = new HashMap<>();
   private String nowAction = "up";
-  public static boolean flag = false;
-  private int initNum = 0;
+  //public static boolean flag = false;
+  //private int initNum = 0;
   /**
    * 实例化
    * 必须传入当前的上下文Context和是否为流模式
@@ -160,13 +160,13 @@ public class PoseClassifierProcessor {
         result.add(lastRepResult);
         numText.setText(completeNum+"");
         totalText.setText("/"+num+"");
-        if(initNum == 0){
-          Observer.setBodyFlag(true);
-        }
-        flag = true;
+        //if(initNum == 0){
+        //  Observer.setBodyFlag(true);
+        //}
+        //flag = true;
+        Observer.setBodyFlag(true);
         return result;
       }
-      flag = false;
       //遍历每一个类的repCounter
       for (RepetitionCounter repCounter : repCounters) {
         int repsBefore = repCounter.getNumRepeats();
@@ -240,10 +240,14 @@ public class PoseClassifierProcessor {
         nowAction = maxConfidenceClass;
         tmpMap.clear();
       }
-      if(initNum == 0 && "up".equals(maxConfidenceClass) && confidence >= 1.0f){
+      if("up".equals(maxConfidenceClass) && confidence >= 1.0f){
         Observer.setBodyFlag(false);
-        initNum ++;
+        //flag = false;
       }
+      //if(initNum == 0 && "up".equals(maxConfidenceClass) && confidence >= 1.0f){
+        //Observer.setBodyFlag(false);
+        //initNum ++;
+      //}
       String maxConfidenceClassResult = String.format(Locale.US, "%s : %.2f confidence", maxConfidenceClass, confidence);
       result.add(maxConfidenceClassResult);
     }

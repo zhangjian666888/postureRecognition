@@ -16,8 +16,10 @@ public class Observer {
     }
 
     public static void setComplateNum(int complateNum) {
-        Observer.complateNum = complateNum;
-        onComplateNumChangeListener.onChange();
+        if(Observer.complateNum != complateNum){
+            onComplateNumChangeListener.onChange();
+            Observer.complateNum = complateNum;
+        }
     }
 
     public static boolean isBodyFlag() {
@@ -25,8 +27,10 @@ public class Observer {
     }
 
     public static void setBodyFlag(boolean bodyFlag) {
-        Observer.bodyFlag = bodyFlag;
-        onBodyFlagChangeListener.onChange();
+        if(Observer.bodyFlag != bodyFlag){
+            Observer.bodyFlag = bodyFlag;
+            onBodyFlagChangeListener.onChange();
+        }
     }
 
     public interface OnChangeListener {

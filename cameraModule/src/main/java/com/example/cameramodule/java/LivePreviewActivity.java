@@ -20,7 +20,6 @@ import android.widget.*;
 import android.widget.AdapterView.OnItemSelectedListener;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.widget.ConstraintLayout;
-import androidx.constraintlayout.widget.ConstraintSet;
 import androidx.core.app.ActivityCompat;
 import androidx.core.app.ActivityCompat.OnRequestPermissionsResultCallback;
 import androidx.core.content.ContextCompat;
@@ -37,6 +36,8 @@ import com.google.mlkit.vision.pose.PoseDetectorOptionsBase;
 
 import java.io.IOException;
 import java.util.*;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 
 import static android.widget.RelativeLayout.CENTER_IN_PARENT;
 import static com.example.cameramodule.java.posedetector.classification.PoseClassifierProcessor.completeNum;
@@ -96,7 +97,7 @@ implements OnRequestPermissionsResultCallback,
   private RelativeLayout actionDscLayout;
   private TextView actionDscText;
   private ImageButton openActionDsc;
-
+  private TextView rxtsText;
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
@@ -161,7 +162,7 @@ implements OnRequestPermissionsResultCallback,
     confirmButton.setOnClickListener(
           v->{
             timer.cancel();
-            PoseClassifierProcessor.flag = false;
+            //PoseClassifierProcessor.flag = false;
             backData();
             finish();
           }
@@ -192,7 +193,8 @@ implements OnRequestPermissionsResultCallback,
     timer.schedule(new TimerTask() {
       @Override
       public void run() {
-        if(PoseClassifierProcessor.flag){
+        //if(PoseClassifierProcessor.flag){
+        if(Observer.isBodyFlag()){
           if(completeNum < num.intValue()){
             stopAllMusic();
             playDetectingPortraitMusic(LivePreviewActivity.this);
@@ -245,7 +247,7 @@ implements OnRequestPermissionsResultCallback,
     punchcardButton.setOnClickListener(
         v->{
           timer.cancel();
-          PoseClassifierProcessor.flag = false;
+          //PoseClassifierProcessor.flag = false;
           reportView.setVisibility(View.INVISIBLE);
           backData();
           finish();
@@ -277,6 +279,8 @@ implements OnRequestPermissionsResultCallback,
     bodyFouce = (ImageView) findViewById(R.id.bodyFouce);
     bodySuccess = (ImageView) findViewById(R.id.bodySuccess);
     //bodyNormal = (ImageView) findViewById(R.id.bodyNormal);
+    //人像提示文字
+    rxtsText = (TextView) findViewById(R.id.rxtsText);
     Handler handler3 = new Handler();
     Observer.setBodyFlagOnChangeListener(new Observer.OnChangeListener() {
       @Override
@@ -287,6 +291,7 @@ implements OnRequestPermissionsResultCallback,
             public void run() {
               bodyFouce.setVisibility(View.VISIBLE);
               bodySuccess.setVisibility(View.INVISIBLE);
+              rxtsText.setVisibility(View.VISIBLE);
             }
           });
         }else {
@@ -295,6 +300,7 @@ implements OnRequestPermissionsResultCallback,
             public void run() {
               bodyFouce.setVisibility(View.INVISIBLE);
               bodySuccess.setVisibility(View.VISIBLE);
+              rxtsText.setVisibility(View.INVISIBLE);
             }
           });
           handler3.postDelayed(new Runnable() {
@@ -427,7 +433,7 @@ implements OnRequestPermissionsResultCallback,
     setResult(CameraModule.REQUEST_CODE, intent);
     PoseClassifierProcessor.completeNum = 0;
     PoseClassifierProcessor.scoreMap.clear();
-    PoseClassifierProcessor.flag = false;
+    //PoseClassifierProcessor.flag = false;
   }
 
   //选择那个检测类型，创建对应的检测模型
@@ -435,6 +441,7 @@ implements OnRequestPermissionsResultCallback,
     // If there's no existing cameraSource, create one.
     if (cameraSource == null) {
       cameraSource = new CameraSource(this, graphicOverlay);
+      cameraSource.setFacing(1);
     }
     try {
       //获取多物体检测
@@ -544,7 +551,7 @@ implements OnRequestPermissionsResultCallback,
   public void onDestroy() {
     super.onDestroy();
     timer.cancel();
-    PoseClassifierProcessor.flag = false;
+    //PoseClassifierProcessor.flag = false;
     if (cameraSource != null) {
       cameraSource.release();
     }
