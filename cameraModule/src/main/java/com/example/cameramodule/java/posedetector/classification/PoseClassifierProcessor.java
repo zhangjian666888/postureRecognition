@@ -67,8 +67,7 @@ public class PoseClassifierProcessor {
   public static Map<String, List<Float>> scoreMap = new HashMap<>();
   private Map<String, List<Float>> tmpMap = new HashMap<>();
   private String nowAction = "up";
-  //public static boolean flag = false;
-  //private int initNum = 0;
+
   /**
    * 实例化
    * 必须传入当前的上下文Context和是否为流模式
@@ -160,98 +159,58 @@ public class PoseClassifierProcessor {
         result.add(lastRepResult);
         numText.setText(completeNum+"");
         totalText.setText("/"+num+"");
-        //if(initNum == 0){
-        //  Observer.setBodyFlag(true);
-        //}
-        //flag = true;
         Observer.setBodyFlag(true);
         return result;
-      }
-      //遍历每一个类的repCounter
-      for (RepetitionCounter repCounter : repCounters) {
-        int repsBefore = repCounter.getNumRepeats();
-        int repsAfter = repCounter.addClassificationResult(classification);
-        //repsAfter > repsBefore即为poseEntered = true，poseConfidence小于exitThreshold
-        //停止了这个动作
-        if (repsAfter > repsBefore) {
-          //当计数器更新时，播放声音。
-          //className: repsAfter reps
-          double total = Double.parseDouble(num + "");
-          if(repsAfter / total >= 0.5 && repsAfter / total < 0.6){
-            stopAllMusic();
-            playHalfFinishMusic(context);
-          }else if(repsAfter == num){
-            stopAllMusic();
-            playComplateMusic(context);
-          }else {
-            ToneGenerator tg = new ToneGenerator(AudioManager.STREAM_NOTIFICATION, 100);
-            tg.startTone(ToneGenerator.TONE_PROP_BEEP);
-          }
-          if(repsAfter > num){
-            lastRepResult = String.format(Locale.US, "%d / %d", num, num);
-            numText.setText(num+"");
-            totalText.setText("/"+num+"");
-          }else {
-            completeNum = repsAfter;
-            numText.setText(repsAfter+"");
-            totalText.setText("/"+num+"");
-            lastRepResult = String.format(Locale.US, "%d / %d", repsAfter, num);
-          }
-          Observer.setComplateNum(repsAfter);
-          break;
-        }
-      }
-      result.add(lastRepResult);
-    }
-
-    //如果pose被找到，将现在这个frame的最大置信度的类加入到result中
-    if (!pose.getAllPoseLandmarks().isEmpty()) {
-      //className : 0.XX confidence
-      //置信度 = 最大置信度 / 置信值的最大范围
-      String maxConfidenceClass = classification.getMaxConfidenceClass();
-      float confidence = classification.getClassConfidence(maxConfidenceClass) / poseClassifier.confidenceRange();
-      if(nowAction.equals(maxConfidenceClass)){
-        List<Float> floats = tmpMap.get(maxConfidenceClass);
-        if(CollectionUtils.isEmpty(floats)){
-          List<Float> floats1 = new ArrayList<>();
-          floats1.add(confidence);
-          tmpMap.put(maxConfidenceClass, floats1);
-        }else {
-          floats.add(confidence);
-        }
       }else {
-        List<Float> floats = tmpMap.get(nowAction);
-        float sum = 0f;
-        float avg = 0f;
-        if(!CollectionUtils.isEmpty(floats)){
-          for (Float aFloat : floats) {
-            sum = sum + aFloat;
+        //className : 0.XX confidence
+        //置信度 = 最大置信度 / 置信值的最大范围
+        String maxConfidenceClass = classification.getMaxConfidenceClass();
+        float confidence = classification.getClassConfidence(maxConfidenceClass) / poseClassifier.confidenceRange();
+        if("up".equals(maxConfidenceClass) && confidence >= 1.0f){
+          Observer.setBodyFlag(false);
+          stopAllMusic();
+        }
+        String maxConfidenceClassResult = String.format(Locale.US, "%s : %.2f confidence", maxConfidenceClass, confidence);
+        result.add(maxConfidenceClassResult);
+      }
+      if (!Observer.isBodyFlag()) {
+        //遍历每一个类的repCounter
+        for (RepetitionCounter repCounter : repCounters) {
+          int repsBefore = repCounter.getNumRepeats();
+          int repsAfter = repCounter.addClassificationResult(classification);
+          //repsAfter > repsBefore即为poseEntered = true，poseConfidence小于exitThreshold
+          //停止了这个动作
+          if (repsAfter > repsBefore) {
+            //当计数器更新时，播放声音。
+            //className: repsAfter reps
+            double total = Double.parseDouble(num + "");
+            if(repsAfter / total >= 0.5 && repsAfter / total < 0.6){
+              stopAllMusic();
+              playHalfFinishMusic(context);
+            }else if(repsAfter == num){
+              stopAllMusic();
+              playComplateMusic(context);
+            }else {
+              ToneGenerator tg = new ToneGenerator(AudioManager.STREAM_NOTIFICATION, 100);
+              tg.startTone(ToneGenerator.TONE_PROP_BEEP);
+            }
+            if(repsAfter > num){
+              lastRepResult = String.format(Locale.US, "%d / %d", num, num);
+              numText.setText(num+"");
+              totalText.setText("/"+num+"");
+            }else {
+              completeNum = repsAfter;
+              numText.setText(repsAfter+"");
+              totalText.setText("/"+num+"");
+              lastRepResult = String.format(Locale.US, "%d / %d", repsAfter, num);
+            }
+            Observer.setComplateNum(repsAfter);
+            break;
           }
-          avg = sum / floats.size();
         }
-        List<Float> floats1 = scoreMap.get(nowAction);
-        if(CollectionUtils.isEmpty(floats1)){
-          List<Float> float2 = new ArrayList<>();
-          float2.add(avg);
-          scoreMap.put(nowAction, float2);
-        }else {
-          floats1.add(avg);
-        }
-        nowAction = maxConfidenceClass;
-        tmpMap.clear();
+        result.add(lastRepResult);
       }
-      if("up".equals(maxConfidenceClass) && confidence >= 1.0f){
-        Observer.setBodyFlag(false);
-        //flag = false;
-      }
-      //if(initNum == 0 && "up".equals(maxConfidenceClass) && confidence >= 1.0f){
-        //Observer.setBodyFlag(false);
-        //initNum ++;
-      //}
-      String maxConfidenceClassResult = String.format(Locale.US, "%s : %.2f confidence", maxConfidenceClass, confidence);
-      result.add(maxConfidenceClassResult);
     }
-    //Log.i(TAG, "PoseClassifierProcessor->getPoseResult->result：" + result.toString());
     return result;
   }
 

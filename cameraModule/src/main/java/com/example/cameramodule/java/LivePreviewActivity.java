@@ -36,8 +36,7 @@ import com.google.mlkit.vision.pose.PoseDetectorOptionsBase;
 
 import java.io.IOException;
 import java.util.*;
-import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
+import java.util.concurrent.*;
 
 import static android.widget.RelativeLayout.CENTER_IN_PARENT;
 import static com.example.cameramodule.java.posedetector.classification.PoseClassifierProcessor.completeNum;
@@ -78,8 +77,7 @@ implements OnRequestPermissionsResultCallback,
   private TextView totalText;
   private TextView numText;
   private String videoUrl = "";
-  private Timer timer;
-
+  private ScheduledExecutorService  scheduledService = Executors.newScheduledThreadPool(10);
   private RelativeLayout reportView;
   private TextView useTimeNum;
   private Button punchcardButton;
@@ -98,6 +96,7 @@ implements OnRequestPermissionsResultCallback,
   private TextView actionDscText;
   private ImageButton openActionDsc;
   private TextView rxtsText;
+  private boolean isStart = false;
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
@@ -161,8 +160,6 @@ implements OnRequestPermissionsResultCallback,
     confirmButton = (TextView) root.findViewById(R.id.confirmButton);
     confirmButton.setOnClickListener(
           v->{
-            timer.cancel();
-            //PoseClassifierProcessor.flag = false;
             backData();
             finish();
           }
@@ -188,20 +185,6 @@ implements OnRequestPermissionsResultCallback,
             mPlayer.seekTo(0);
           }
     );
-    //定时播放人像检测
-    timer = new Timer();
-    timer.schedule(new TimerTask() {
-      @Override
-      public void run() {
-        //if(PoseClassifierProcessor.flag){
-        if(Observer.isBodyFlag()){
-          if(completeNum < num.intValue()){
-            stopAllMusic();
-            playDetectingPortraitMusic(LivePreviewActivity.this);
-          }
-        }
-      }
-    },0,10000);
     //播放开始的音乐
     playReadyMusic(this);
     //消息弹框
@@ -246,8 +229,6 @@ implements OnRequestPermissionsResultCallback,
     punchcardButton = (Button) findViewById(R.id.punchcard);
     punchcardButton.setOnClickListener(
         v->{
-          timer.cancel();
-          //PoseClassifierProcessor.flag = false;
           reportView.setVisibility(View.INVISIBLE);
           backData();
           finish();
@@ -274,7 +255,18 @@ implements OnRequestPermissionsResultCallback,
         }
       }
     });
-
+    //定时播放人像检测
+    scheduledService.scheduleWithFixedDelay(new Runnable() {
+      @Override
+      public void run() {
+        if(Observer.isBodyFlag()){
+          if(completeNum < num.intValue()){
+            stopAllMusic();
+            playDetectingPortraitMusic(LivePreviewActivity.this);
+          }
+        }
+      }
+    },20, 10, TimeUnit.SECONDS);
     //人像框的显示隐藏
     bodyFouce = (ImageView) findViewById(R.id.bodyFouce);
     bodySuccess = (ImageView) findViewById(R.id.bodySuccess);
@@ -291,10 +283,13 @@ implements OnRequestPermissionsResultCallback,
             public void run() {
               bodyFouce.setVisibility(View.VISIBLE);
               bodySuccess.setVisibility(View.INVISIBLE);
-              rxtsText.setVisibility(View.VISIBLE);
+              if(isStart){
+                rxtsText.setVisibility(View.VISIBLE);
+              }
             }
           });
         }else {
+          isStart = true;
           handler3.post(new Runnable() {
             @Override
             public void run() {
@@ -308,8 +303,9 @@ implements OnRequestPermissionsResultCallback,
             public void run() {
               bodyFouce.setVisibility(View.INVISIBLE);
               bodySuccess.setVisibility(View.INVISIBLE);
+              rxtsText.setVisibility(View.INVISIBLE);
             }
-          },2000);
+          },1000);
         }
       }
     });
@@ -372,28 +368,29 @@ implements OnRequestPermissionsResultCallback,
   public static void stopAllMusic(){
     if(mediaReadyPlayerAdpater != null){
       if(mediaReadyPlayerAdpater.isPlaying()){
-        mediaReadyPlayerAdpater.pause();
+        mediaReadyPlayerAdpater.release();
       }
     }
     if(mediaDetectingPortraitPlayerAdpater != null){
       if(mediaDetectingPortraitPlayerAdpater.isPlaying()){
-        mediaDetectingPortraitPlayerAdpater.pause();
+        mediaDetectingPortraitPlayerAdpater.release();
       }
     }
     if(mediaComplatePlayerAdpater != null){
       if(mediaComplatePlayerAdpater.isPlaying()){
-        mediaComplatePlayerAdpater.pause();
+        mediaComplatePlayerAdpater.release();
       }
     }
     if(mediaHalfFinishPlayerAdpater != null){
       if(mediaHalfFinishPlayerAdpater.isPlaying()){
-        mediaHalfFinishPlayerAdpater.pause();
+        mediaHalfFinishPlayerAdpater.release();
       }
     }
 
   }
 
   private void backData(){
+    scheduledService.shutdown();
     stopAllMusic();
     Intent intent = new Intent();
     JSONObject jsonObject = new JSONObject();
@@ -550,8 +547,6 @@ implements OnRequestPermissionsResultCallback,
   @Override
   public void onDestroy() {
     super.onDestroy();
-    timer.cancel();
-    //PoseClassifierProcessor.flag = false;
     if (cameraSource != null) {
       cameraSource.release();
     }
@@ -639,9 +634,9 @@ implements OnRequestPermissionsResultCallback,
   public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
     if (cameraSource != null) {
       if (isChecked) {
-        cameraSource.setFacing(CameraSource.CAMERA_FACING_FRONT);
-      } else {
         cameraSource.setFacing(CameraSource.CAMERA_FACING_BACK);
+      } else {
+        cameraSource.setFacing(CameraSource.CAMERA_FACING_FRONT);
       }
     }
     preview.stop();
