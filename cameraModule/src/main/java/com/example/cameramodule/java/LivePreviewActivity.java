@@ -298,14 +298,14 @@ implements OnRequestPermissionsResultCallback,
               rxtsText.setVisibility(View.INVISIBLE);
             }
           });
-          handler3.postDelayed(new Runnable() {
+          handler3.post(new Runnable() {
             @Override
             public void run() {
               bodyFouce.setVisibility(View.INVISIBLE);
               bodySuccess.setVisibility(View.INVISIBLE);
               rxtsText.setVisibility(View.INVISIBLE);
             }
-          },1000);
+          });
         }
       }
     });

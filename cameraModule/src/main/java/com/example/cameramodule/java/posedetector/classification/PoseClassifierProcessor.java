@@ -154,11 +154,11 @@ public class PoseClassifierProcessor {
     if (isStreamMode) {
       //将pose的分类结果输入EMA平滑处理，得到一个新的分类结果
       classification = emaSmoothing.getSmoothedResult(classification);
+      numText.setText(completeNum+"");
+      totalText.setText("/"+num+"");
       //如果没有pose被检测到则提前返回，不更新repCounter
       if (pose.getAllPoseLandmarks().isEmpty()) {
         result.add(lastRepResult);
-        numText.setText(completeNum+"");
-        totalText.setText("/"+num+"");
         Observer.setBodyFlag(true);
         return result;
       }else {
@@ -166,7 +166,10 @@ public class PoseClassifierProcessor {
         //置信度 = 最大置信度 / 置信值的最大范围
         String maxConfidenceClass = classification.getMaxConfidenceClass();
         float confidence = classification.getClassConfidence(maxConfidenceClass) / poseClassifier.confidenceRange();
-        if("up".equals(maxConfidenceClass) && confidence >= 1.0f){
+        //float likelihood = pose.getAllPoseLandmarks().get(PoseLandmark.LEFT_KNEE).getInFrameLikelihood();
+        //float likelihood1 = pose.getAllPoseLandmarks().get(PoseLandmark.LEFT_KNEE).getInFrameLikelihood();
+
+        if("up".equals(maxConfidenceClass) && confidence >= 0.9f){
           Observer.setBodyFlag(false);
           stopAllMusic();
         }
@@ -195,13 +198,10 @@ public class PoseClassifierProcessor {
               tg.startTone(ToneGenerator.TONE_PROP_BEEP);
             }
             if(repsAfter > num){
+              completeNum = num;
               lastRepResult = String.format(Locale.US, "%d / %d", num, num);
-              numText.setText(num+"");
-              totalText.setText("/"+num+"");
             }else {
               completeNum = repsAfter;
-              numText.setText(repsAfter+"");
-              totalText.setText("/"+num+"");
               lastRepResult = String.format(Locale.US, "%d / %d", repsAfter, num);
             }
             Observer.setComplateNum(repsAfter);

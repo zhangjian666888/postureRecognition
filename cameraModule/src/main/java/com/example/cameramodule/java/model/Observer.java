@@ -16,10 +16,8 @@ public class Observer {
     }
 
     public static void setComplateNum(int complateNum) {
-        if(Observer.complateNum != complateNum){
-            onComplateNumChangeListener.onChange();
-            Observer.complateNum = complateNum;
-        }
+        Observer.complateNum = complateNum;
+        onComplateNumChangeListener.onChange();
     }
 
     public static boolean isBodyFlag() {
