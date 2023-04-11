@@ -3,6 +3,7 @@ package com.example.cameramodule.java.music.impl;
 
 import android.content.Context;
 import android.content.res.AssetFileDescriptor;
+import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.text.TextUtils;
 import android.util.Log;
@@ -169,12 +170,14 @@ public class MediaPlayerAdpater implements IPlayerApi {
         }
 
         mMediaPlayer = new MediaPlayer();
+        mMediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
         initializeMediaPlayer();
         try {
             //防止再次添加进来出现崩溃信息
             mMediaPlayer.reset();
             mMediaPlayer.setDataSource(musiUrl);
             mMediaPlayer.prepareAsync();
+            mMediaPlayer.setVolume(1f, 1f);
         } catch (IOException e) {
             Log.e(TAG, e.getMessage().toString());
         }
@@ -199,11 +202,13 @@ public class MediaPlayerAdpater implements IPlayerApi {
             }
 
             mMediaPlayer = new MediaPlayer();
+            mMediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
             initializeMediaPlayer();
             //防止再次添加进来出现崩溃信息
             mMediaPlayer.reset();
             mMediaPlayer.setDataSource(afd.getFileDescriptor(), afd.getStartOffset(), afd.getLength());
             mMediaPlayer.prepareAsync();
+            mMediaPlayer.setVolume(1f, 1f);
         } catch (IOException e) {
             Log.e(TAG, e.getMessage().toString());
         }

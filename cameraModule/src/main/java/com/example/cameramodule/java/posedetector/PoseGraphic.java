@@ -103,14 +103,14 @@ public class PoseGraphic extends Graphic {
       return;
     }
 
-    // Draw all the points
-    for (PoseLandmark landmark : landmarks) {
-      drawPoint(canvas, landmark, whitePaint);
-      if (visualizeZ && rescaleZForVisualization) {
-        zMin = min(zMin, landmark.getPosition3D().getZ());
-        zMax = max(zMax, landmark.getPosition3D().getZ());
-      }
-    }
+    // Draw all the points 画所有的点
+    //for (PoseLandmark landmark : landmarks) {
+    //  drawPoint(canvas, landmark, whitePaint);
+    //  if (visualizeZ && rescaleZForVisualization) {
+    //    zMin = min(zMin, landmark.getPosition3D().getZ());
+    //    zMax = max(zMax, landmark.getPosition3D().getZ());
+    //  }
+    //}
 
     PoseLandmark nose = pose.getPoseLandmark(PoseLandmark.NOSE);
     PoseLandmark lefyEyeInner = pose.getPoseLandmark(PoseLandmark.LEFT_EYE_INNER);
@@ -148,59 +148,61 @@ public class PoseGraphic extends Graphic {
     PoseLandmark leftFootIndex = pose.getPoseLandmark(PoseLandmark.LEFT_FOOT_INDEX);
     PoseLandmark rightFootIndex = pose.getPoseLandmark(PoseLandmark.RIGHT_FOOT_INDEX);
 
-    // Face
-    drawLine(canvas, nose, lefyEyeInner, whitePaint);
-    drawLine(canvas, lefyEyeInner, lefyEye, whitePaint);
-    drawLine(canvas, lefyEye, leftEyeOuter, whitePaint);
-    drawLine(canvas, leftEyeOuter, leftEar, whitePaint);
-    drawLine(canvas, nose, rightEyeInner, whitePaint);
-    drawLine(canvas, rightEyeInner, rightEye, whitePaint);
-    drawLine(canvas, rightEye, rightEyeOuter, whitePaint);
-    drawLine(canvas, rightEyeOuter, rightEar, whitePaint);
-    drawLine(canvas, leftMouth, rightMouth, whitePaint);
+    //点连成线
+    //// Face
+    //drawLine(canvas, nose, lefyEyeInner, whitePaint);
+    //drawLine(canvas, lefyEyeInner, lefyEye, whitePaint);
+    //drawLine(canvas, lefyEye, leftEyeOuter, whitePaint);
+    //drawLine(canvas, leftEyeOuter, leftEar, whitePaint);
+    //drawLine(canvas, nose, rightEyeInner, whitePaint);
+    //drawLine(canvas, rightEyeInner, rightEye, whitePaint);
+    //drawLine(canvas, rightEye, rightEyeOuter, whitePaint);
+    //drawLine(canvas, rightEyeOuter, rightEar, whitePaint);
+    //drawLine(canvas, leftMouth, rightMouth, whitePaint);
+    //
+    //drawLine(canvas, leftShoulder, rightShoulder, whitePaint);
+    //drawLine(canvas, leftHip, rightHip, whitePaint);
+    //
+    //// Left body
+    //drawLine(canvas, leftShoulder, leftElbow, leftPaint);
+    //drawLine(canvas, leftElbow, leftWrist, leftPaint);
+    //drawLine(canvas, leftShoulder, leftHip, leftPaint);
+    //drawLine(canvas, leftHip, leftKnee, leftPaint);
+    //drawLine(canvas, leftKnee, leftAnkle, leftPaint);
+    //drawLine(canvas, leftWrist, leftThumb, leftPaint);
+    //drawLine(canvas, leftWrist, leftPinky, leftPaint);
+    //drawLine(canvas, leftWrist, leftIndex, leftPaint);
+    //drawLine(canvas, leftIndex, leftPinky, leftPaint);
+    //drawLine(canvas, leftAnkle, leftHeel, leftPaint);
+    //drawLine(canvas, leftHeel, leftFootIndex, leftPaint);
+    //
+    //// Right body
+    //drawLine(canvas, rightShoulder, rightElbow, rightPaint);
+    //drawLine(canvas, rightElbow, rightWrist, rightPaint);
+    //drawLine(canvas, rightShoulder, rightHip, rightPaint);
+    //drawLine(canvas, rightHip, rightKnee, rightPaint);
+    //drawLine(canvas, rightKnee, rightAnkle, rightPaint);
+    //drawLine(canvas, rightWrist, rightThumb, rightPaint);
+    //drawLine(canvas, rightWrist, rightPinky, rightPaint);
+    //drawLine(canvas, rightWrist, rightIndex, rightPaint);
+    //drawLine(canvas, rightIndex, rightPinky, rightPaint);
+    //drawLine(canvas, rightAnkle, rightHeel, rightPaint);
+    //drawLine(canvas, rightHeel, rightFootIndex, rightPaint);
 
-    drawLine(canvas, leftShoulder, rightShoulder, whitePaint);
-    drawLine(canvas, leftHip, rightHip, whitePaint);
+    // Draw inFrameLikelihood for all points 给所有的点画置信度
+    //if (showInFrameLikelihood) {
+    //  for (PoseLandmark landmark : landmarks) {
+    //    canvas.drawText(
+    //        String.format(Locale.US, "%.2f", landmark.getInFrameLikelihood()),
+    //        translateX(landmark.getPosition().x),
+    //        translateY(landmark.getPosition().y),
+    //        whitePaint);
+    //  }
+    //}
 
-    // Left body
-    drawLine(canvas, leftShoulder, leftElbow, leftPaint);
-    drawLine(canvas, leftElbow, leftWrist, leftPaint);
-    drawLine(canvas, leftShoulder, leftHip, leftPaint);
-    drawLine(canvas, leftHip, leftKnee, leftPaint);
-    drawLine(canvas, leftKnee, leftAnkle, leftPaint);
-    drawLine(canvas, leftWrist, leftThumb, leftPaint);
-    drawLine(canvas, leftWrist, leftPinky, leftPaint);
-    drawLine(canvas, leftWrist, leftIndex, leftPaint);
-    drawLine(canvas, leftIndex, leftPinky, leftPaint);
-    drawLine(canvas, leftAnkle, leftHeel, leftPaint);
-    drawLine(canvas, leftHeel, leftFootIndex, leftPaint);
-
-    // Right body
-    drawLine(canvas, rightShoulder, rightElbow, rightPaint);
-    drawLine(canvas, rightElbow, rightWrist, rightPaint);
-    drawLine(canvas, rightShoulder, rightHip, rightPaint);
-    drawLine(canvas, rightHip, rightKnee, rightPaint);
-    drawLine(canvas, rightKnee, rightAnkle, rightPaint);
-    drawLine(canvas, rightWrist, rightThumb, rightPaint);
-    drawLine(canvas, rightWrist, rightPinky, rightPaint);
-    drawLine(canvas, rightWrist, rightIndex, rightPaint);
-    drawLine(canvas, rightIndex, rightPinky, rightPaint);
-    drawLine(canvas, rightAnkle, rightHeel, rightPaint);
-    drawLine(canvas, rightHeel, rightFootIndex, rightPaint);
-
-    // Draw inFrameLikelihood for all points
-    if (showInFrameLikelihood) {
-      for (PoseLandmark landmark : landmarks) {
-        canvas.drawText(
-            String.format(Locale.US, "%.2f", landmark.getInFrameLikelihood()),
-            translateX(landmark.getPosition().x),
-            translateY(landmark.getPosition().y),
-            whitePaint);
-      }
-    }
   }
 
-    void drawPoint(Canvas canvas, PoseLandmark landmark, Paint paint) {
+  void drawPoint(Canvas canvas, PoseLandmark landmark, Paint paint) {
     PointF3D point = landmark.getPosition3D();
     maybeUpdatePaintColor(paint, canvas, point.getZ());
     canvas.drawCircle(translateX(point.getX()), translateY(point.getY()), DOT_RADIUS, paint);

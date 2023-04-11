@@ -96,7 +96,7 @@ implements OnRequestPermissionsResultCallback,
   private TextView actionDscText;
   private ImageButton openActionDsc;
   private TextView rxtsText;
-  private boolean isStart = false;
+  public static boolean isStart = false;
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
@@ -262,7 +262,12 @@ implements OnRequestPermissionsResultCallback,
         if(Observer.isBodyFlag()){
           if(completeNum < num.intValue()){
             stopAllMusic();
-            playDetectingPortraitMusic(LivePreviewActivity.this);
+            long ys = System.currentTimeMillis() % 2;
+            if(ys > 0){
+              playDetectingPortraitMusic(LivePreviewActivity.this);
+            }else {
+              playDetectingPortraitMusic2(LivePreviewActivity.this);
+            }
           }
         }
       }
@@ -341,6 +346,18 @@ implements OnRequestPermissionsResultCallback,
     });
   }
 
+  //播放检测音乐2
+  public static MediaPlayerAdpater mediaDetectingPortraitPlayerAdpater2;
+  public static void playDetectingPortraitMusic2(Context context){
+    mediaDetectingPortraitPlayerAdpater2 = new MediaPlayerAdpater(context);
+    mediaDetectingPortraitPlayerAdpater2.loadMedia(R.raw.rxjc2, new OnPrepareCompletedListener() {
+      @Override
+      public void onComplete() {
+        mediaDetectingPortraitPlayerAdpater2.play();
+      }
+    });
+  }
+
   //播放完成音乐
   public static MediaPlayerAdpater mediaComplatePlayerAdpater;
   public static void playComplateMusic(Context context){
@@ -365,6 +382,17 @@ implements OnRequestPermissionsResultCallback,
     });
   }
 
+  public static MediaPlayerAdpater trainComplatePlayerAdpater;
+  public static void playTrainComplateMusic(Context context){
+    trainComplatePlayerAdpater = new MediaPlayerAdpater(context);
+    trainComplatePlayerAdpater.loadMedia(R.raw.wcdz, new OnPrepareCompletedListener() {
+      @Override
+      public void onComplete() {
+        trainComplatePlayerAdpater.play();
+      }
+    });
+  }
+
   public static void stopAllMusic(){
     if(mediaReadyPlayerAdpater != null){
       if(mediaReadyPlayerAdpater.isPlaying()){
@@ -376,6 +404,11 @@ implements OnRequestPermissionsResultCallback,
         mediaDetectingPortraitPlayerAdpater.release();
       }
     }
+    if(mediaDetectingPortraitPlayerAdpater2 != null){
+      if(mediaDetectingPortraitPlayerAdpater2.isPlaying()){
+        mediaDetectingPortraitPlayerAdpater2.release();
+      }
+    }
     if(mediaComplatePlayerAdpater != null){
       if(mediaComplatePlayerAdpater.isPlaying()){
         mediaComplatePlayerAdpater.release();
@@ -384,6 +417,11 @@ implements OnRequestPermissionsResultCallback,
     if(mediaHalfFinishPlayerAdpater != null){
       if(mediaHalfFinishPlayerAdpater.isPlaying()){
         mediaHalfFinishPlayerAdpater.release();
+      }
+    }
+    if(trainComplatePlayerAdpater != null){
+      if(trainComplatePlayerAdpater.isPlaying()){
+        trainComplatePlayerAdpater.release();
       }
     }
 

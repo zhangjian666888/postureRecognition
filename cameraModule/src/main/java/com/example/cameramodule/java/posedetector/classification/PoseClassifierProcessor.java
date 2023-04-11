@@ -176,7 +176,7 @@ public class PoseClassifierProcessor {
         String maxConfidenceClassResult = String.format(Locale.US, "%s : %.2f confidence", maxConfidenceClass, confidence);
         result.add(maxConfidenceClassResult);
       }
-      if (!Observer.isBodyFlag()) {
+      if (!Observer.isBodyFlag() && isStart) {
         //遍历每一个类的repCounter
         for (RepetitionCounter repCounter : repCounters) {
           int repsBefore = repCounter.getNumRepeats();
@@ -194,8 +194,10 @@ public class PoseClassifierProcessor {
               stopAllMusic();
               playComplateMusic(context);
             }else {
-              ToneGenerator tg = new ToneGenerator(AudioManager.STREAM_NOTIFICATION, 100);
-              tg.startTone(ToneGenerator.TONE_PROP_BEEP);
+              stopAllMusic();
+              playTrainComplateMusic(context);
+              //ToneGenerator tg = new ToneGenerator(AudioManager.STREAM_NOTIFICATION, 100);
+              //tg.startTone(ToneGenerator.TONE_PROP_BEEP);
             }
             if(repsAfter > num){
               completeNum = num;
