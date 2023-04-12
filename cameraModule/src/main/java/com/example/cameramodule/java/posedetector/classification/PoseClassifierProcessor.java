@@ -171,7 +171,6 @@ public class PoseClassifierProcessor {
 
         if("up".equals(maxConfidenceClass) && confidence >= 0.9f){
           Observer.setBodyFlag(false);
-          stopAllMusic();
         }
         String maxConfidenceClassResult = String.format(Locale.US, "%s : %.2f confidence", maxConfidenceClass, confidence);
         result.add(maxConfidenceClassResult);
@@ -188,13 +187,13 @@ public class PoseClassifierProcessor {
             //className: repsAfter reps
             double total = Double.parseDouble(num + "");
             if(repsAfter / total >= 0.5 && repsAfter / total < 0.6){
-              stopAllMusic();
+              stopExcludeHalfFinishMusic();
               playHalfFinishMusic(context);
             }else if(repsAfter == num){
-              stopAllMusic();
+              stopExcludeComplateMusic();
               playComplateMusic(context);
             }else {
-              stopAllMusic();
+              stopExcludeTrainComplateMusic();
               playTrainComplateMusic(context);
               //ToneGenerator tg = new ToneGenerator(AudioManager.STREAM_NOTIFICATION, 100);
               //tg.startTone(ToneGenerator.TONE_PROP_BEEP);

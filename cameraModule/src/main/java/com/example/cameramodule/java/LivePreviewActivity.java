@@ -261,11 +261,12 @@ implements OnRequestPermissionsResultCallback,
       public void run() {
         if(Observer.isBodyFlag()){
           if(completeNum < num.intValue()){
-            stopAllMusic();
             long ys = System.currentTimeMillis() % 2;
             if(ys > 0){
+              stopExcludeDetectingPortraitMusic();
               playDetectingPortraitMusic(LivePreviewActivity.this);
             }else {
+              stopExcludeDetectingPortrait2Music();
               playDetectingPortraitMusic2(LivePreviewActivity.this);
             }
           }
@@ -424,9 +425,144 @@ implements OnRequestPermissionsResultCallback,
         trainComplatePlayerAdpater.release();
       }
     }
-
+  }
+  public static void stopExcludeTrainComplateMusic(){
+    if(mediaReadyPlayerAdpater != null){
+      if(mediaReadyPlayerAdpater.isPlaying()){
+        mediaReadyPlayerAdpater.release();
+      }
+    }
+    if(mediaDetectingPortraitPlayerAdpater != null){
+      if(mediaDetectingPortraitPlayerAdpater.isPlaying()){
+        mediaDetectingPortraitPlayerAdpater.release();
+      }
+    }
+    if(mediaDetectingPortraitPlayerAdpater2 != null){
+      if(mediaDetectingPortraitPlayerAdpater2.isPlaying()){
+        mediaDetectingPortraitPlayerAdpater2.release();
+      }
+    }
+    if(mediaComplatePlayerAdpater != null){
+      if(mediaComplatePlayerAdpater.isPlaying()){
+        mediaComplatePlayerAdpater.release();
+      }
+    }
+    if(mediaHalfFinishPlayerAdpater != null){
+      if(mediaHalfFinishPlayerAdpater.isPlaying()){
+        mediaHalfFinishPlayerAdpater.release();
+      }
+    }
+  }
+  public static void stopExcludeHalfFinishMusic(){
+    if(mediaReadyPlayerAdpater != null){
+      if(mediaReadyPlayerAdpater.isPlaying()){
+        mediaReadyPlayerAdpater.release();
+      }
+    }
+    if(mediaDetectingPortraitPlayerAdpater != null){
+      if(mediaDetectingPortraitPlayerAdpater.isPlaying()){
+        mediaDetectingPortraitPlayerAdpater.release();
+      }
+    }
+    if(mediaDetectingPortraitPlayerAdpater2 != null){
+      if(mediaDetectingPortraitPlayerAdpater2.isPlaying()){
+        mediaDetectingPortraitPlayerAdpater2.release();
+      }
+    }
+    if(mediaComplatePlayerAdpater != null){
+      if(mediaComplatePlayerAdpater.isPlaying()){
+        mediaComplatePlayerAdpater.release();
+      }
+    }
+    if(trainComplatePlayerAdpater != null){
+      if(trainComplatePlayerAdpater.isPlaying()){
+        trainComplatePlayerAdpater.release();
+      }
+    }
+  }
+  public static void stopExcludeComplateMusic(){
+    if(mediaReadyPlayerAdpater != null){
+      if(mediaReadyPlayerAdpater.isPlaying()){
+        mediaReadyPlayerAdpater.release();
+      }
+    }
+    if(mediaDetectingPortraitPlayerAdpater != null){
+      if(mediaDetectingPortraitPlayerAdpater.isPlaying()){
+        mediaDetectingPortraitPlayerAdpater.release();
+      }
+    }
+    if(mediaDetectingPortraitPlayerAdpater2 != null){
+      if(mediaDetectingPortraitPlayerAdpater2.isPlaying()){
+        mediaDetectingPortraitPlayerAdpater2.release();
+      }
+    }
+    if(mediaHalfFinishPlayerAdpater != null){
+      if(mediaHalfFinishPlayerAdpater.isPlaying()){
+        mediaHalfFinishPlayerAdpater.release();
+      }
+    }
+    if(trainComplatePlayerAdpater != null){
+      if(trainComplatePlayerAdpater.isPlaying()){
+        trainComplatePlayerAdpater.release();
+      }
+    }
   }
 
+  public static void stopExcludeDetectingPortrait2Music(){
+    if(mediaReadyPlayerAdpater != null){
+      if(mediaReadyPlayerAdpater.isPlaying()){
+        mediaReadyPlayerAdpater.release();
+      }
+    }
+    if(mediaDetectingPortraitPlayerAdpater != null){
+      if(mediaDetectingPortraitPlayerAdpater.isPlaying()){
+        mediaDetectingPortraitPlayerAdpater.release();
+      }
+    }
+    if(mediaComplatePlayerAdpater != null){
+      if(mediaComplatePlayerAdpater.isPlaying()){
+        mediaComplatePlayerAdpater.release();
+      }
+    }
+    if(mediaHalfFinishPlayerAdpater != null){
+      if(mediaHalfFinishPlayerAdpater.isPlaying()){
+        mediaHalfFinishPlayerAdpater.release();
+      }
+    }
+    if(trainComplatePlayerAdpater != null){
+      if(trainComplatePlayerAdpater.isPlaying()){
+        trainComplatePlayerAdpater.release();
+      }
+    }
+  }
+
+  public static void stopExcludeDetectingPortraitMusic(){
+    if(mediaReadyPlayerAdpater != null){
+      if(mediaReadyPlayerAdpater.isPlaying()){
+        mediaReadyPlayerAdpater.release();
+      }
+    }
+    if(mediaDetectingPortraitPlayerAdpater2 != null){
+      if(mediaDetectingPortraitPlayerAdpater2.isPlaying()){
+        mediaDetectingPortraitPlayerAdpater2.release();
+      }
+    }
+    if(mediaComplatePlayerAdpater != null){
+      if(mediaComplatePlayerAdpater.isPlaying()){
+        mediaComplatePlayerAdpater.release();
+      }
+    }
+    if(mediaHalfFinishPlayerAdpater != null){
+      if(mediaHalfFinishPlayerAdpater.isPlaying()){
+        mediaHalfFinishPlayerAdpater.release();
+      }
+    }
+    if(trainComplatePlayerAdpater != null){
+      if(trainComplatePlayerAdpater.isPlaying()){
+        trainComplatePlayerAdpater.release();
+      }
+    }
+  }
   private void backData(){
     scheduledService.shutdown();
     stopAllMusic();
