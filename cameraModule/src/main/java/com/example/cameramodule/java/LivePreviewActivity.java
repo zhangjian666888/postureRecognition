@@ -35,8 +35,12 @@ import com.google.android.gms.common.annotation.KeepName;
 import com.google.mlkit.vision.pose.PoseDetectorOptionsBase;
 
 import java.io.IOException;
-import java.util.*;
-import java.util.concurrent.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 import static android.widget.RelativeLayout.CENTER_IN_PARENT;
 import static com.example.cameramodule.java.posedetector.classification.PoseClassifierProcessor.completeNum;
@@ -97,6 +101,8 @@ implements OnRequestPermissionsResultCallback,
   private ImageButton openActionDsc;
   private TextView rxtsText;
   public static boolean isStart = false;
+  private LinearLayout root;
+  private  Dialog mCameraDialog;
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
@@ -148,7 +154,7 @@ implements OnRequestPermissionsResultCallback,
     backBtn = (ToggleButton) findViewById(R.id.backBtn);
     backBtn.setOnClickListener(
             v->{
-              setDialog();
+              mCameraDialog.show();
             }
     );
     abolishButton = (TextView) root.findViewById(R.id.btn_cancel);
@@ -316,11 +322,6 @@ implements OnRequestPermissionsResultCallback,
       }
     });
 
-  }
-  private LinearLayout root;
-  private  Dialog mCameraDialog;
-  private void setDialog() {
-    mCameraDialog.show();
   }
 
   //播放准备音乐
@@ -507,7 +508,6 @@ implements OnRequestPermissionsResultCallback,
       }
     }
   }
-
   public static void stopExcludeDetectingPortrait2Music(){
     if(mediaReadyPlayerAdpater != null){
       if(mediaReadyPlayerAdpater.isPlaying()){
@@ -535,7 +535,6 @@ implements OnRequestPermissionsResultCallback,
       }
     }
   }
-
   public static void stopExcludeDetectingPortraitMusic(){
     if(mediaReadyPlayerAdpater != null){
       if(mediaReadyPlayerAdpater.isPlaying()){
@@ -563,6 +562,7 @@ implements OnRequestPermissionsResultCallback,
       }
     }
   }
+
   private void backData(){
     scheduledService.shutdown();
     stopAllMusic();
@@ -766,8 +766,7 @@ implements OnRequestPermissionsResultCallback,
   }
 
   @Override
-  public void onRequestPermissionsResult(
-      int requestCode, String[] permissions, int[] grantResults) {
+  public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
     if (allPermissionsGranted()) {
       createCameraSource(selectedModel, num);
     }
@@ -836,9 +835,9 @@ implements OnRequestPermissionsResultCallback,
   private TextView startTime, endTime;
   private ImageView forwardButton, backwardButton;
   private boolean isShow = false;
-
   public static final int UPDATE_TIME = 0x0001;
   public static final int HIDE_CONTROL = 0x0002;
+
   private Handler mHandler = new Handler() {
     @Override
     public void handleMessage(Message msg) {

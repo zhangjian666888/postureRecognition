@@ -29,6 +29,7 @@ import com.google.mlkit.vision.pose.PoseLandmark;
 import java.util.List;
 import java.util.Locale;
 
+import static com.example.cameramodule.java.utils.CommonUtils.getAngle;
 import static java.lang.Math.max;
 import static java.lang.Math.min;
 
@@ -149,45 +150,45 @@ public class PoseGraphic extends Graphic {
     PoseLandmark rightFootIndex = pose.getPoseLandmark(PoseLandmark.RIGHT_FOOT_INDEX);
 
     //点连成线
-    //// Face
-    //drawLine(canvas, nose, lefyEyeInner, whitePaint);
-    //drawLine(canvas, lefyEyeInner, lefyEye, whitePaint);
-    //drawLine(canvas, lefyEye, leftEyeOuter, whitePaint);
-    //drawLine(canvas, leftEyeOuter, leftEar, whitePaint);
-    //drawLine(canvas, nose, rightEyeInner, whitePaint);
-    //drawLine(canvas, rightEyeInner, rightEye, whitePaint);
-    //drawLine(canvas, rightEye, rightEyeOuter, whitePaint);
-    //drawLine(canvas, rightEyeOuter, rightEar, whitePaint);
-    //drawLine(canvas, leftMouth, rightMouth, whitePaint);
-    //
-    //drawLine(canvas, leftShoulder, rightShoulder, whitePaint);
-    //drawLine(canvas, leftHip, rightHip, whitePaint);
-    //
-    //// Left body
-    //drawLine(canvas, leftShoulder, leftElbow, leftPaint);
-    //drawLine(canvas, leftElbow, leftWrist, leftPaint);
-    //drawLine(canvas, leftShoulder, leftHip, leftPaint);
-    //drawLine(canvas, leftHip, leftKnee, leftPaint);
-    //drawLine(canvas, leftKnee, leftAnkle, leftPaint);
-    //drawLine(canvas, leftWrist, leftThumb, leftPaint);
-    //drawLine(canvas, leftWrist, leftPinky, leftPaint);
-    //drawLine(canvas, leftWrist, leftIndex, leftPaint);
-    //drawLine(canvas, leftIndex, leftPinky, leftPaint);
-    //drawLine(canvas, leftAnkle, leftHeel, leftPaint);
-    //drawLine(canvas, leftHeel, leftFootIndex, leftPaint);
-    //
-    //// Right body
-    //drawLine(canvas, rightShoulder, rightElbow, rightPaint);
-    //drawLine(canvas, rightElbow, rightWrist, rightPaint);
-    //drawLine(canvas, rightShoulder, rightHip, rightPaint);
-    //drawLine(canvas, rightHip, rightKnee, rightPaint);
-    //drawLine(canvas, rightKnee, rightAnkle, rightPaint);
-    //drawLine(canvas, rightWrist, rightThumb, rightPaint);
-    //drawLine(canvas, rightWrist, rightPinky, rightPaint);
-    //drawLine(canvas, rightWrist, rightIndex, rightPaint);
-    //drawLine(canvas, rightIndex, rightPinky, rightPaint);
-    //drawLine(canvas, rightAnkle, rightHeel, rightPaint);
-    //drawLine(canvas, rightHeel, rightFootIndex, rightPaint);
+    // Face
+    drawLine(canvas, nose, lefyEyeInner, whitePaint);
+    drawLine(canvas, lefyEyeInner, lefyEye, whitePaint);
+    drawLine(canvas, lefyEye, leftEyeOuter, whitePaint);
+    drawLine(canvas, leftEyeOuter, leftEar, whitePaint);
+    drawLine(canvas, nose, rightEyeInner, whitePaint);
+    drawLine(canvas, rightEyeInner, rightEye, whitePaint);
+    drawLine(canvas, rightEye, rightEyeOuter, whitePaint);
+    drawLine(canvas, rightEyeOuter, rightEar, whitePaint);
+    drawLine(canvas, leftMouth, rightMouth, whitePaint);
+
+    drawLine(canvas, leftShoulder, rightShoulder, whitePaint);
+    drawLine(canvas, leftHip, rightHip, whitePaint);
+
+    // Left body
+    drawLine(canvas, leftShoulder, leftElbow, leftPaint);
+    drawLine(canvas, leftElbow, leftWrist, leftPaint);
+    drawLine(canvas, leftShoulder, leftHip, leftPaint);
+    drawLine(canvas, leftHip, leftKnee, leftPaint);
+    drawLine(canvas, leftKnee, leftAnkle, leftPaint);
+    drawLine(canvas, leftWrist, leftThumb, leftPaint);
+    drawLine(canvas, leftWrist, leftPinky, leftPaint);
+    drawLine(canvas, leftWrist, leftIndex, leftPaint);
+    drawLine(canvas, leftIndex, leftPinky, leftPaint);
+    drawLine(canvas, leftAnkle, leftHeel, leftPaint);
+    drawLine(canvas, leftHeel, leftFootIndex, leftPaint);
+
+    // Right body
+    drawLine(canvas, rightShoulder, rightElbow, rightPaint);
+    drawLine(canvas, rightElbow, rightWrist, rightPaint);
+    drawLine(canvas, rightShoulder, rightHip, rightPaint);
+    drawLine(canvas, rightHip, rightKnee, rightPaint);
+    drawLine(canvas, rightKnee, rightAnkle, rightPaint);
+    drawLine(canvas, rightWrist, rightThumb, rightPaint);
+    drawLine(canvas, rightWrist, rightPinky, rightPaint);
+    drawLine(canvas, rightWrist, rightIndex, rightPaint);
+    drawLine(canvas, rightIndex, rightPinky, rightPaint);
+    drawLine(canvas, rightAnkle, rightHeel, rightPaint);
+    drawLine(canvas, rightHeel, rightFootIndex, rightPaint);
 
     // Draw inFrameLikelihood for all points 给所有的点画置信度
     //if (showInFrameLikelihood) {
@@ -200,6 +201,19 @@ public class PoseGraphic extends Graphic {
     //  }
     //}
 
+    //右膝关节角度
+    double rightHipAngle = getAngle(
+            pose.getPoseLandmark(PoseLandmark.RIGHT_HIP),
+            pose.getPoseLandmark(PoseLandmark.RIGHT_KNEE),
+            pose.getPoseLandmark(PoseLandmark.RIGHT_ANKLE));
+    canvas.drawText("右膝关节角度 " + rightHipAngle, classificationX, (canvas.getHeight() - 1000), classificationTextPaint);
+
+    //右肘关节角度
+    double rightElbowsAngle = getAngle(
+            pose.getPoseLandmark(PoseLandmark.RIGHT_WRIST),
+            pose.getPoseLandmark(PoseLandmark.RIGHT_ELBOW),
+            pose.getPoseLandmark(PoseLandmark.RIGHT_SHOULDER));
+    canvas.drawText("右肘关节角度 " + rightElbowsAngle, classificationX, (canvas.getHeight() - 700), classificationTextPaint);
   }
 
   void drawPoint(Canvas canvas, PoseLandmark landmark, Paint paint) {

@@ -17,20 +17,13 @@
 package com.example.cameramodule.java.posedetector.classification;
 
 import android.content.Context;
-import android.media.AudioManager;
-import android.media.ToneGenerator;
 import android.os.Looper;
 import android.util.Log;
-import android.view.View;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
 import androidx.annotation.WorkerThread;
-import com.example.cameramodule.java.LivePreviewActivity;
 import com.example.cameramodule.java.model.Observer;
-import com.google.android.gms.common.util.CollectionUtils;
 import com.google.common.base.Preconditions;
 import com.google.mlkit.vision.pose.Pose;
-import com.google.mlkit.vision.pose.PoseLandmark;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -166,8 +159,6 @@ public class PoseClassifierProcessor {
         //置信度 = 最大置信度 / 置信值的最大范围
         String maxConfidenceClass = classification.getMaxConfidenceClass();
         float confidence = classification.getClassConfidence(maxConfidenceClass) / poseClassifier.confidenceRange();
-        //float likelihood = pose.getAllPoseLandmarks().get(PoseLandmark.LEFT_KNEE).getInFrameLikelihood();
-        //float likelihood1 = pose.getAllPoseLandmarks().get(PoseLandmark.LEFT_KNEE).getInFrameLikelihood();
 
         if("up".equals(maxConfidenceClass) && confidence >= 0.9f){
           Observer.setBodyFlag(false);
@@ -184,7 +175,6 @@ public class PoseClassifierProcessor {
           //停止了这个动作
           if (repsAfter > repsBefore) {
             //当计数器更新时，播放声音。
-            //className: repsAfter reps
             double total = Double.parseDouble(num + "");
             if(repsAfter / total >= 0.5 && repsAfter / total < 0.6){
               stopExcludeHalfFinishMusic();
@@ -195,8 +185,6 @@ public class PoseClassifierProcessor {
             }else {
               stopExcludeTrainComplateMusic();
               playTrainComplateMusic(context);
-              //ToneGenerator tg = new ToneGenerator(AudioManager.STREAM_NOTIFICATION, 100);
-              //tg.startTone(ToneGenerator.TONE_PROP_BEEP);
             }
             if(repsAfter > num){
               completeNum = num;
