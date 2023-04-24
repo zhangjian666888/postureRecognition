@@ -8,6 +8,7 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.graphics.Outline;
 import android.graphics.Rect;
+import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.os.Handler;
@@ -62,10 +63,12 @@ implements OnRequestPermissionsResultCallback,
         SeekBar.OnSeekBarChangeListener, View.OnTouchListener {
 
   private static final String POSE_DETECTION = "深蹲";
-  private static final String Lift_YOUR_LEGS_STRAIGHT_BACK = "向后直退抬高";
   private static final String STAND_ON_ONE_LEG = "单脚站立";
   private static final String STRAIGHT_FORWARD_LEG_LIFT = "前直抬腿";
   private static final String STANDING_KNEE_BEND = "站立位屈膝";
+  private static final String PDTZ = "站立提踵";
+  private static final String ZZTZ = "坐姿提踵";
+  private static final String WSKH = "蚌式开合";
   private static final String TAG = "LivePreviewActivity";
   private static final int PERMISSION_REQUESTS = 1;
 
@@ -75,6 +78,7 @@ implements OnRequestPermissionsResultCallback,
   //默认模型
   private String selectedModel = POSE_DETECTION;
   private Integer num = 10;
+  private Integer indexNum = 1;
   private ToggleButton backBtn;
   private ImageButton videoBtn;
   private ImageView backVideo;
@@ -103,6 +107,51 @@ implements OnRequestPermissionsResultCallback,
   public static boolean isStart = false;
   private LinearLayout root;
   private  Dialog mCameraDialog;
+  private Button mCountDown;
+  private TextView mStartCount;
+  private static final int START_COUNTING = 3;
+  private RelativeLayout countDownLayout;
+
+  //视频控件
+  private ImageView playOrPauseIv;
+  private SurfaceView videoSuf;
+  private MediaPlayer mPlayer;
+  private SeekBar mSeekBar;
+  private String path;
+  private RelativeLayout rootViewRl;
+  private LinearLayout controlLl;
+  private TextView startTime, endTime;
+  private ImageView forwardButton, backwardButton;
+  private boolean isShow = false;
+  public static final int UPDATE_TIME = 0x0001;
+  public static final int HIDE_CONTROL = 0x0002;
+
+  private Handler mHandler = new Handler() {
+    @Override
+    public void handleMessage(Message msg) {
+      switch (msg.what) {
+        case UPDATE_TIME:
+          updateTime();
+          mHandler.sendEmptyMessageDelayed(UPDATE_TIME, 500);
+          break;
+        case HIDE_CONTROL:
+          hideControl();
+          break;
+        case START_COUNTING:
+          int count = (int) msg.obj;
+          mStartCount.setText(count + "");
+          if (count > 1) {
+            Message msg1 = obtainMessage();
+            msg1.what = START_COUNTING;
+            msg1.obj = count - 1;
+            sendMessageDelayed(msg1, 1000);
+          }else{
+
+          }
+          break;
+      }
+    }
+  };
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
@@ -118,21 +167,19 @@ implements OnRequestPermissionsResultCallback,
       if(intent1.getStringExtra("num") != null && !"".equals(intent1.getStringExtra("num"))){
         num = Integer.parseInt(intent1.getStringExtra("num"));
       }
+      if(intent1.getStringExtra("indexNum") != null && !"".equals(intent1.getStringExtra("indexNum"))){
+        indexNum = Integer.parseInt(intent1.getStringExtra("indexNum"));
+      }
       videoUrl = intent1.getStringExtra("videoUrl");
       actionDsc = intent1.getStringExtra("actionDsc");
     }
     preview = findViewById(R.id.preview_view);
     graphicOverlay = findViewById(R.id.graphic_overlay);
+
     //文本框
     numText = (TextView)findViewById(R.id.numText);
     totalText = (TextView)findViewById(R.id.totalText);
-    //创建相机
-    if (allPermissionsGranted()) {
-      //默认选择第一个检测类型
-      createCameraSource(selectedModel, num);
-    } else {
-      getRuntimePermissions();
-    }
+
     //前后置摄像头切换按钮
     ToggleButton facingSwitch = findViewById(R.id.facing_switch);
     facingSwitch.setOnCheckedChangeListener(this);
@@ -191,17 +238,7 @@ implements OnRequestPermissionsResultCallback,
             mPlayer.seekTo(0);
           }
     );
-    //播放开始的音乐
-    playReadyMusic(this);
-    //消息弹框
-    TextView messageText = (TextView) findViewById(R.id.tkText);
-    Handler handler = new Handler();
-    handler.postDelayed(new Runnable() {
-      @Override
-      public void run() {
-        messageText.setVisibility(View.INVISIBLE);
-      }
-    }, 5000);
+
     //动作要领弹框
     openActionDsc = (ImageButton) findViewById(R.id.openActionDsc);
     actionDscLayout = (RelativeLayout) findViewById(R.id.actionDscLayout);
@@ -269,11 +306,13 @@ implements OnRequestPermissionsResultCallback,
           if(completeNum < num.intValue()){
             long ys = System.currentTimeMillis() % 2;
             if(ys > 0){
-              stopExcludeDetectingPortraitMusic();
-              playDetectingPortraitMusic(LivePreviewActivity.this);
+              //stopExcludeDetectingPortraitMusic();
+              //playDetectingPortraitMusic(LivePreviewActivity.this);
+              playMusic(LivePreviewActivity.this, LivePreviewActivity.this.getString(R.string.rxjc));
             }else {
-              stopExcludeDetectingPortrait2Music();
-              playDetectingPortraitMusic2(LivePreviewActivity.this);
+              //stopExcludeDetectingPortrait2Music();
+              //playDetectingPortraitMusic2(LivePreviewActivity.this);
+              playMusic(LivePreviewActivity.this, LivePreviewActivity.this.getString(R.string.rxjc2));
             }
           }
         }
@@ -322,243 +361,220 @@ implements OnRequestPermissionsResultCallback,
       }
     });
 
+    //倒计时
+    countDownLayout = (RelativeLayout) findViewById(R.id.countDown);
+    mStartCount = (TextView) findViewById(R.id.count_text);
+    //mCountDown = (Button) findViewById(R.id.count_button);
+    //mCountDown.setOnClickListener(new View.OnClickListener() {
+    //  @Override
+    //  public void onClick(View view) {
+    //    countDownLayout.setVisibility(View.INVISIBLE);
+    //    //创建相机
+    //    if (allPermissionsGranted()) {
+    //      //默认选择第一个检测类型
+    //      createCameraSource(selectedModel, num);
+    //      //播放开始的音乐
+    //      playMusic(LivePreviewActivity.this, LivePreviewActivity.this.getString(R.string.ydzb));
+    //    } else {
+    //      getRuntimePermissions();
+    //    }
+    //  }
+    //});
+    try {
+      String dzsx = "http://43.143.181.73/app/第"+ indexNum +"个动作.MP3";
+      String dzmc = "http://43.143.181.73/app/"+selectedModel+".MP3";
+      playDzsxMusic(dzsx,  dzmc);
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
+
   }
 
-  //播放准备音乐
-  public static MediaPlayerAdpater mediaReadyPlayerAdpater;
-  public static void playReadyMusic(Context context){
-    mediaReadyPlayerAdpater = new MediaPlayerAdpater(context);
-    mediaReadyPlayerAdpater.loadMedia(R.raw.ydzb, new OnPrepareCompletedListener() {
+  private void showTskView(){
+    //消息弹框
+    TextView messageText = (TextView) findViewById(R.id.tkText);
+    Handler handler = new Handler();
+    handler.postDelayed(new Runnable() {
       @Override
-      public void onComplete() {
-        mediaReadyPlayerAdpater.play();
+      public void run() {
+        messageText.setVisibility(View.INVISIBLE);
+      }
+    }, 5000);
+  }
+  private void showDjsView(){
+    Message msg = mHandler.obtainMessage();
+    msg.what = START_COUNTING;
+    msg.obj = 3;
+    mHandler.sendMessageDelayed(msg, 3);
+  }
+  private MediaPlayer dzsxMediaPlayer;
+  public void playDzsxMusic(String url, String dzmc) throws IOException {
+    dzsxMediaPlayer = new MediaPlayer();
+    dzsxMediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
+    dzsxMediaPlayer.reset();
+    dzsxMediaPlayer.setDataSource(url);
+    dzsxMediaPlayer.prepareAsync();
+    dzsxMediaPlayer.setVolume(1f, 1f);
+    dzsxMediaPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
+      @Override
+      public void onPrepared(MediaPlayer mediaPlayer) {
+        dzsxMediaPlayer.start();
+        mStartCount.setText("第一个动作");
+      }
+    });
+    dzsxMediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+      @Override
+      public void onCompletion(MediaPlayer mediaPlayer) {
+        mediaPlayer.release();
+        try {
+          playDzmcMusic(dzmc);
+        } catch (IOException e) {
+          throw new RuntimeException(e);
+        }
       }
     });
   }
 
-  //播放检测音乐
-  public static MediaPlayerAdpater mediaDetectingPortraitPlayerAdpater;
-  public static void playDetectingPortraitMusic(Context context){
-    mediaDetectingPortraitPlayerAdpater = new MediaPlayerAdpater(context);
-    mediaDetectingPortraitPlayerAdpater.loadMedia(R.raw.rxjc, new OnPrepareCompletedListener() {
+  private MediaPlayer dzmcMediaPlayer;
+  public void playDzmcMusic(String url) throws IOException {
+    dzmcMediaPlayer = new MediaPlayer();
+    dzmcMediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
+    dzmcMediaPlayer.reset();
+    dzmcMediaPlayer.setDataSource(url);
+    dzmcMediaPlayer.prepareAsync();
+    dzmcMediaPlayer.setVolume(1f, 1f);
+    dzmcMediaPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
       @Override
-      public void onComplete() {
-        mediaDetectingPortraitPlayerAdpater.play();
+      public void onPrepared(MediaPlayer mediaPlayer) {
+        dzmcMediaPlayer.start();
+        mStartCount.setText(selectedModel);
+      }
+    });
+    dzmcMediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+      @Override
+      public void onCompletion(MediaPlayer mediaPlayer) {
+        mediaPlayer.release();
+        try {
+          playZbksMusic();
+        } catch (IOException e) {
+          throw new RuntimeException(e);
+        }
       }
     });
   }
 
-  //播放检测音乐2
-  public static MediaPlayerAdpater mediaDetectingPortraitPlayerAdpater2;
-  public static void playDetectingPortraitMusic2(Context context){
-    mediaDetectingPortraitPlayerAdpater2 = new MediaPlayerAdpater(context);
-    mediaDetectingPortraitPlayerAdpater2.loadMedia(R.raw.rxjc2, new OnPrepareCompletedListener() {
+  private MediaPlayer qzbMediaPlayer;
+  public void playZbksMusic() throws IOException {
+    qzbMediaPlayer = new MediaPlayer();
+    qzbMediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
+    qzbMediaPlayer.reset();
+    qzbMediaPlayer.setDataSource(LivePreviewActivity.this.getString(R.string.qzb));
+    qzbMediaPlayer.prepareAsync();
+    qzbMediaPlayer.setVolume(1f, 1f);
+    qzbMediaPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
       @Override
-      public void onComplete() {
-        mediaDetectingPortraitPlayerAdpater2.play();
+      public void onPrepared(MediaPlayer mediaPlayer) {
+        mStartCount.setText("准备");
+        qzbMediaPlayer.start();
+      }
+    });
+    qzbMediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+      @Override
+      public void onCompletion(MediaPlayer mediaPlayer) {
+        mediaPlayer.release();
+        try {
+          playdjsMusic();
+        } catch (IOException e) {
+          throw new RuntimeException(e);
+        }
       }
     });
   }
 
-  //播放完成音乐
-  public static MediaPlayerAdpater mediaComplatePlayerAdpater;
-  public static void playComplateMusic(Context context){
-    mediaComplatePlayerAdpater = new MediaPlayerAdpater(context);
-    mediaComplatePlayerAdpater.loadMedia(R.raw.ydwc, new OnPrepareCompletedListener() {
+  private MediaPlayer djsMediaPlayer;
+  public void playdjsMusic() throws IOException {
+    djsMediaPlayer = new MediaPlayer();
+    djsMediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
+    djsMediaPlayer.reset();
+    djsMediaPlayer.setDataSource(LivePreviewActivity.this.getString(R.string.djs));
+    djsMediaPlayer.prepareAsync();
+    djsMediaPlayer.setVolume(1f, 1f);
+    djsMediaPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
       @Override
-      public void onComplete() {
-        mediaComplatePlayerAdpater.play();
+      public void onPrepared(MediaPlayer mediaPlayer) {
+        djsMediaPlayer.start();
+        showDjsView();
+      }
+    });
+    djsMediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+      @Override
+      public void onCompletion(MediaPlayer mediaPlayer) {
+        mediaPlayer.release();
+        try {
+          playksMusic();
+        } catch (IOException e) {
+          throw new RuntimeException(e);
+        }
       }
     });
   }
 
-  //播放完成一半时音乐
-  public static MediaPlayerAdpater mediaHalfFinishPlayerAdpater;
-  public static void playHalfFinishMusic(Context context){
-    mediaHalfFinishPlayerAdpater = new MediaPlayerAdpater(context);
-    mediaHalfFinishPlayerAdpater.loadMedia(R.raw.ydybhzys, new OnPrepareCompletedListener() {
+  private MediaPlayer ksMediaPlayer;
+  public void playksMusic() throws IOException {
+    ksMediaPlayer = new MediaPlayer();
+    ksMediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
+    ksMediaPlayer.reset();
+    ksMediaPlayer.setDataSource(LivePreviewActivity.this.getString(R.string.ks));
+    ksMediaPlayer.prepareAsync();
+    ksMediaPlayer.setVolume(1f, 1f);
+    ksMediaPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
       @Override
-      public void onComplete() {
-        mediaHalfFinishPlayerAdpater.play();
+      public void onPrepared(MediaPlayer mediaPlayer) {
+        mStartCount.setText("开始");
+        ksMediaPlayer.start();
+
+      }
+    });
+    ksMediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+      @Override
+      public void onCompletion(MediaPlayer mediaPlayer) {
+        mediaPlayer.release();
+        countDownLayout.setVisibility(View.INVISIBLE);
+        showTskView();
+        //播放开始的音乐
+        playMusic(LivePreviewActivity.this, LivePreviewActivity.this.getString(R.string.ydzb));
+        //创建相机
+        if (allPermissionsGranted()) {
+          //默认选择第一个检测类型
+          createCameraSource(selectedModel, num);
+        } else {
+          getRuntimePermissions();
+        }
       }
     });
   }
 
-  public static MediaPlayerAdpater trainComplatePlayerAdpater;
-  public static void playTrainComplateMusic(Context context){
-    trainComplatePlayerAdpater = new MediaPlayerAdpater(context);
-    trainComplatePlayerAdpater.loadMedia(R.raw.wcdz, new OnPrepareCompletedListener() {
+  //播放音乐
+  public static MediaPlayerAdpater mediaPlayerAdpater;
+  public static void playMusic(Context context, String url){
+    if(mediaPlayerAdpater != null){
+      if(mediaPlayerAdpater.isPlaying()){
+        mediaPlayerAdpater.release();
+      }
+    }
+    mediaPlayerAdpater = new MediaPlayerAdpater(context);
+    mediaPlayerAdpater.loadMedia(url, new OnPrepareCompletedListener() {
       @Override
       public void onComplete() {
-        trainComplatePlayerAdpater.play();
+        mediaPlayerAdpater.play();
       }
     });
   }
 
   public static void stopAllMusic(){
-    if(mediaReadyPlayerAdpater != null){
-      if(mediaReadyPlayerAdpater.isPlaying()){
-        mediaReadyPlayerAdpater.release();
-      }
-    }
-    if(mediaDetectingPortraitPlayerAdpater != null){
-      if(mediaDetectingPortraitPlayerAdpater.isPlaying()){
-        mediaDetectingPortraitPlayerAdpater.release();
-      }
-    }
-    if(mediaDetectingPortraitPlayerAdpater2 != null){
-      if(mediaDetectingPortraitPlayerAdpater2.isPlaying()){
-        mediaDetectingPortraitPlayerAdpater2.release();
-      }
-    }
-    if(mediaComplatePlayerAdpater != null){
-      if(mediaComplatePlayerAdpater.isPlaying()){
-        mediaComplatePlayerAdpater.release();
-      }
-    }
-    if(mediaHalfFinishPlayerAdpater != null){
-      if(mediaHalfFinishPlayerAdpater.isPlaying()){
-        mediaHalfFinishPlayerAdpater.release();
-      }
-    }
-    if(trainComplatePlayerAdpater != null){
-      if(trainComplatePlayerAdpater.isPlaying()){
-        trainComplatePlayerAdpater.release();
-      }
-    }
-  }
-  public static void stopExcludeTrainComplateMusic(){
-    if(mediaReadyPlayerAdpater != null){
-      if(mediaReadyPlayerAdpater.isPlaying()){
-        mediaReadyPlayerAdpater.release();
-      }
-    }
-    if(mediaDetectingPortraitPlayerAdpater != null){
-      if(mediaDetectingPortraitPlayerAdpater.isPlaying()){
-        mediaDetectingPortraitPlayerAdpater.release();
-      }
-    }
-    if(mediaDetectingPortraitPlayerAdpater2 != null){
-      if(mediaDetectingPortraitPlayerAdpater2.isPlaying()){
-        mediaDetectingPortraitPlayerAdpater2.release();
-      }
-    }
-    if(mediaComplatePlayerAdpater != null){
-      if(mediaComplatePlayerAdpater.isPlaying()){
-        mediaComplatePlayerAdpater.release();
-      }
-    }
-    if(mediaHalfFinishPlayerAdpater != null){
-      if(mediaHalfFinishPlayerAdpater.isPlaying()){
-        mediaHalfFinishPlayerAdpater.release();
-      }
-    }
-  }
-  public static void stopExcludeHalfFinishMusic(){
-    if(mediaReadyPlayerAdpater != null){
-      if(mediaReadyPlayerAdpater.isPlaying()){
-        mediaReadyPlayerAdpater.release();
-      }
-    }
-    if(mediaDetectingPortraitPlayerAdpater != null){
-      if(mediaDetectingPortraitPlayerAdpater.isPlaying()){
-        mediaDetectingPortraitPlayerAdpater.release();
-      }
-    }
-    if(mediaDetectingPortraitPlayerAdpater2 != null){
-      if(mediaDetectingPortraitPlayerAdpater2.isPlaying()){
-        mediaDetectingPortraitPlayerAdpater2.release();
-      }
-    }
-    if(mediaComplatePlayerAdpater != null){
-      if(mediaComplatePlayerAdpater.isPlaying()){
-        mediaComplatePlayerAdpater.release();
-      }
-    }
-    if(trainComplatePlayerAdpater != null){
-      if(trainComplatePlayerAdpater.isPlaying()){
-        trainComplatePlayerAdpater.release();
-      }
-    }
-  }
-  public static void stopExcludeComplateMusic(){
-    if(mediaReadyPlayerAdpater != null){
-      if(mediaReadyPlayerAdpater.isPlaying()){
-        mediaReadyPlayerAdpater.release();
-      }
-    }
-    if(mediaDetectingPortraitPlayerAdpater != null){
-      if(mediaDetectingPortraitPlayerAdpater.isPlaying()){
-        mediaDetectingPortraitPlayerAdpater.release();
-      }
-    }
-    if(mediaDetectingPortraitPlayerAdpater2 != null){
-      if(mediaDetectingPortraitPlayerAdpater2.isPlaying()){
-        mediaDetectingPortraitPlayerAdpater2.release();
-      }
-    }
-    if(mediaHalfFinishPlayerAdpater != null){
-      if(mediaHalfFinishPlayerAdpater.isPlaying()){
-        mediaHalfFinishPlayerAdpater.release();
-      }
-    }
-    if(trainComplatePlayerAdpater != null){
-      if(trainComplatePlayerAdpater.isPlaying()){
-        trainComplatePlayerAdpater.release();
-      }
-    }
-  }
-  public static void stopExcludeDetectingPortrait2Music(){
-    if(mediaReadyPlayerAdpater != null){
-      if(mediaReadyPlayerAdpater.isPlaying()){
-        mediaReadyPlayerAdpater.release();
-      }
-    }
-    if(mediaDetectingPortraitPlayerAdpater != null){
-      if(mediaDetectingPortraitPlayerAdpater.isPlaying()){
-        mediaDetectingPortraitPlayerAdpater.release();
-      }
-    }
-    if(mediaComplatePlayerAdpater != null){
-      if(mediaComplatePlayerAdpater.isPlaying()){
-        mediaComplatePlayerAdpater.release();
-      }
-    }
-    if(mediaHalfFinishPlayerAdpater != null){
-      if(mediaHalfFinishPlayerAdpater.isPlaying()){
-        mediaHalfFinishPlayerAdpater.release();
-      }
-    }
-    if(trainComplatePlayerAdpater != null){
-      if(trainComplatePlayerAdpater.isPlaying()){
-        trainComplatePlayerAdpater.release();
-      }
-    }
-  }
-  public static void stopExcludeDetectingPortraitMusic(){
-    if(mediaReadyPlayerAdpater != null){
-      if(mediaReadyPlayerAdpater.isPlaying()){
-        mediaReadyPlayerAdpater.release();
-      }
-    }
-    if(mediaDetectingPortraitPlayerAdpater2 != null){
-      if(mediaDetectingPortraitPlayerAdpater2.isPlaying()){
-        mediaDetectingPortraitPlayerAdpater2.release();
-      }
-    }
-    if(mediaComplatePlayerAdpater != null){
-      if(mediaComplatePlayerAdpater.isPlaying()){
-        mediaComplatePlayerAdpater.release();
-      }
-    }
-    if(mediaHalfFinishPlayerAdpater != null){
-      if(mediaHalfFinishPlayerAdpater.isPlaying()){
-        mediaHalfFinishPlayerAdpater.release();
-      }
-    }
-    if(trainComplatePlayerAdpater != null){
-      if(trainComplatePlayerAdpater.isPlaying()){
-        trainComplatePlayerAdpater.release();
+    if(mediaPlayerAdpater != null){
+      if(mediaPlayerAdpater.isPlaying()){
+        mediaPlayerAdpater.release();
       }
     }
   }
@@ -663,6 +679,42 @@ implements OnRequestPermissionsResultCallback,
                         true,
                         true,
                         "POSE_ZLWQX", num, numText, totalText));
+      }else if(model.indexOf(PDTZ) >= 0){
+        //平地提踵
+        cameraSource.setMachineLearningFrameProcessor(
+                new PoseDetectorProcessor(
+                        this,
+                        poseDetectorOptions,
+                        shouldShowInFrameLikelihood,
+                        visualizeZ,
+                        rescaleZ,
+                        true,
+                        true,
+                        "POSE_PDTZ", num, numText, totalText));
+      }else if(model.indexOf(ZZTZ) >= 0){
+        //坐姿提踵
+        cameraSource.setMachineLearningFrameProcessor(
+                new PoseDetectorProcessor(
+                        this,
+                        poseDetectorOptions,
+                        shouldShowInFrameLikelihood,
+                        visualizeZ,
+                        rescaleZ,
+                        true,
+                        true,
+                        "POSE_ZZTZ", num, numText, totalText));
+      }else if(model.indexOf(WSKH) >= 0){
+        //蚌式开合
+        cameraSource.setMachineLearningFrameProcessor(
+                new PoseDetectorProcessor(
+                        this,
+                        poseDetectorOptions,
+                        shouldShowInFrameLikelihood,
+                        visualizeZ,
+                        rescaleZ,
+                        true,
+                        true,
+                        "POSE_WSKH", num, numText, totalText));
       }else{
         //深蹲
         cameraSource.setMachineLearningFrameProcessor(
@@ -791,7 +843,7 @@ implements OnRequestPermissionsResultCallback,
     selectedModel = parent.getItemAtPosition(pos).toString();
     preview.stop();
     if (allPermissionsGranted()) {
-      createCameraSource(selectedModel, num);
+      //createCameraSource(selectedModel, num);
       startCameraSource();
     } else {
       getRuntimePermissions();
@@ -825,34 +877,6 @@ implements OnRequestPermissionsResultCallback,
   }
 
   /*视频播放*/
-  private ImageView playOrPauseIv;
-  private SurfaceView videoSuf;
-  private MediaPlayer mPlayer;
-  private SeekBar mSeekBar;
-  private String path;
-  private RelativeLayout rootViewRl;
-  private LinearLayout controlLl;
-  private TextView startTime, endTime;
-  private ImageView forwardButton, backwardButton;
-  private boolean isShow = false;
-  public static final int UPDATE_TIME = 0x0001;
-  public static final int HIDE_CONTROL = 0x0002;
-
-  private Handler mHandler = new Handler() {
-    @Override
-    public void handleMessage(Message msg) {
-      switch (msg.what) {
-        case UPDATE_TIME:
-          updateTime();
-          mHandler.sendEmptyMessageDelayed(UPDATE_TIME, 500);
-          break;
-        case HIDE_CONTROL:
-          hideControl();
-          break;
-      }
-    }
-  };
-
   private void initData() {
     path = videoUrl;//这里写上你的视频地址
   }

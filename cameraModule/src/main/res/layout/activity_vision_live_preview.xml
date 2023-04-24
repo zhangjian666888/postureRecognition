@@ -190,4 +190,6 @@
   <!-- 动作要领弹框 -->
   <include layout="@layout/activity_essential_of_exercise"/>
 
+  <include android:id="@+id/countDown" layout="@layout/activity_count_down"/>
+
 </androidx.constraintlayout.widget.ConstraintLayout>

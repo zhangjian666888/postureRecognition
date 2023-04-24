@@ -142,4 +142,14 @@
     <string name="pref_title_segmentation_raw_size_mask" translatable="false">开启原始尺寸mask</string>
     <string name="pref_key_segmentation_raw_size_mask" translatable="false">srsm</string>
 
+    <string name="rxjc" translatable="false">http://43.143.181.73/app/rxjc.mp3</string>
+    <string name="rxjc2" translatable="false">http://43.143.181.73/app/rxjc2.mp3</string>
+    <string name="wcdz" translatable="false">http://43.143.181.73/app/wcdz.mp3</string>
+    <string name="ydwc" translatable="false">http://43.143.181.73/app/ydwc.mp3</string>
+    <string name="ydybhzys" translatable="false">http://43.143.181.73/app/ydybhzys.mp3</string>
+    <string name="ydzb" translatable="false">http://43.143.181.73/app/ydzb.mp3</string>
+
+    <string name="qzb" translatable="false">http://43.143.181.73/app/请准备.MP3</string>
+    <string name="djs" translatable="false">http://43.143.181.73/app/djs.mp3</string>
+    <string name="ks" translatable="false">http://43.143.181.73/app/开始.MP3</string>
 </resources>

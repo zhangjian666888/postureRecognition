@@ -39,7 +39,7 @@ public class PoseGraphic extends Graphic {
   private static final float DOT_RADIUS = 8.0f;
   private static final float IN_FRAME_LIKELIHOOD_TEXT_SIZE = 30.0f;
   private static final float STROKE_WIDTH = 10.0f;
-  private static final float POSE_CLASSIFICATION_TEXT_SIZE = 60.0f;
+  private static final float POSE_CLASSIFICATION_TEXT_SIZE = 120.0f;
 
   private final Pose pose;
   private final boolean showInFrameLikelihood;
@@ -69,7 +69,7 @@ public class PoseGraphic extends Graphic {
 
     this.poseClassification = poseClassification;
     classificationTextPaint = new Paint();
-    classificationTextPaint.setColor(Color.WHITE);
+    classificationTextPaint.setColor(Color.RED);
     classificationTextPaint.setTextSize(POSE_CLASSIFICATION_TEXT_SIZE);
     classificationTextPaint.setShadowLayer(5.0f, 0f, 0f, Color.BLACK);
 
@@ -90,14 +90,14 @@ public class PoseGraphic extends Graphic {
     // Draw pose classification text.
     float classificationX = POSE_CLASSIFICATION_TEXT_SIZE * 0.5f;
 
-    //for (int i = 0; i < poseClassification.size(); i++) {
-    //  float classificationY = (canvas.getHeight() - 1000);
-    //  canvas.drawText(
-    //          poseClassification.get(i),
-    //          classificationX,
-    //          classificationY,
-    //          classificationTextPaint);
-    //}
+    for (int i = 0; i < poseClassification.size(); i++) {
+      float classificationY = (canvas.getHeight() - 1000);
+      canvas.drawText(
+              poseClassification.get(i),
+              classificationX,
+              classificationY,
+              classificationTextPaint);
+    }
 
     List<PoseLandmark> landmarks = pose.getAllPoseLandmarks();
     if (landmarks.isEmpty()) {
@@ -176,6 +176,7 @@ public class PoseGraphic extends Graphic {
     drawLine(canvas, leftIndex, leftPinky, leftPaint);
     drawLine(canvas, leftAnkle, leftHeel, leftPaint);
     drawLine(canvas, leftHeel, leftFootIndex, leftPaint);
+    drawLine(canvas, leftAnkle, leftFootIndex, leftPaint);
 
     // Right body
     drawLine(canvas, rightShoulder, rightElbow, rightPaint);
@@ -189,8 +190,9 @@ public class PoseGraphic extends Graphic {
     drawLine(canvas, rightIndex, rightPinky, rightPaint);
     drawLine(canvas, rightAnkle, rightHeel, rightPaint);
     drawLine(canvas, rightHeel, rightFootIndex, rightPaint);
+    drawLine(canvas, rightAnkle, rightFootIndex, rightPaint);
 
-    // Draw inFrameLikelihood for all points 给所有的点画置信度
+    // //Draw inFrameLikelihood for all points 给所有的点画置信度
     //if (showInFrameLikelihood) {
     //  for (PoseLandmark landmark : landmarks) {
     //    canvas.drawText(
@@ -201,19 +203,6 @@ public class PoseGraphic extends Graphic {
     //  }
     //}
 
-    //右膝关节角度
-    double rightHipAngle = getAngle(
-            pose.getPoseLandmark(PoseLandmark.RIGHT_HIP),
-            pose.getPoseLandmark(PoseLandmark.RIGHT_KNEE),
-            pose.getPoseLandmark(PoseLandmark.RIGHT_ANKLE));
-    canvas.drawText("右膝关节角度 " + rightHipAngle, classificationX, (canvas.getHeight() - 1000), classificationTextPaint);
-
-    //右肘关节角度
-    double rightElbowsAngle = getAngle(
-            pose.getPoseLandmark(PoseLandmark.RIGHT_WRIST),
-            pose.getPoseLandmark(PoseLandmark.RIGHT_ELBOW),
-            pose.getPoseLandmark(PoseLandmark.RIGHT_SHOULDER));
-    canvas.drawText("右肘关节角度 " + rightElbowsAngle, classificationX, (canvas.getHeight() - 700), classificationTextPaint);
   }
 
   void drawPoint(Canvas canvas, PoseLandmark landmark, Paint paint) {

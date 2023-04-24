@@ -38,6 +38,7 @@ public class CameraModule extends UniModule {
             Intent intent = new Intent(mUniSDKInstance.getContext(), LivePreviewActivity.class);
             intent.putExtra("actionName", options.getString("actionName"));
             intent.putExtra("num", options.getString("num"));
+            intent.putExtra("indexNum", options.getString("indexNum"));
             intent.putExtra("videoUrl", options.getString("videoUrl"));
             intent.putExtra("actionDsc", options.getString("actionDsc"));
             ((Activity)mUniSDKInstance.getContext()).startActivityForResult(intent, REQUEST_CODE);

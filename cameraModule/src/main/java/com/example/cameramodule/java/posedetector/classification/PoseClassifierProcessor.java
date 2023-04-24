@@ -21,6 +21,7 @@ import android.os.Looper;
 import android.util.Log;
 import android.widget.TextView;
 import androidx.annotation.WorkerThread;
+import com.example.cameramodule.R;
 import com.example.cameramodule.java.model.Observer;
 import com.google.common.base.Preconditions;
 import com.google.mlkit.vision.pose.Pose;
@@ -42,12 +43,15 @@ public class PoseClassifierProcessor {
   private static final String POSE_DJZL_FILE = "pose/pose_djzl.csv"; //单脚站立
   private static final String POSE_QZTT_FILE = "pose/pose_qztt.csv"; //前直抬腿
   private static final String POSE_ZLWQX_FILE = "pose/pose_zlwqx.csv"; //站立位屈膝
+  private static final String POSE_ZZTZ_FILE = "pose/pose_zztz.csv"; //坐姿提踵
+  private static final String POSE_PDTZ_FILE = "pose/pose_pdtz.csv"; //平地提踵
+  private static final String POSE_WSKH_FILE = "pose/pose_wskhyd.csv"; //蚌式开合
   private static final String Lift_YOUR_LEGS_STRAIGHT_BACK_SAMPLES_FILE = "pose/lift_your_legs_straight_back_csvs.csv";
   private static final String PUSHUPS_CLASS = "pushups_down";
   private static final String SQUATS_CLASS = "down";
   //检测的类别
   private static final String[] POSE_CLASSES = {
-    PUSHUPS_CLASS, SQUATS_CLASS
+          PUSHUPS_CLASS, SQUATS_CLASS
   };
   //是否是流模式
   private final boolean isStreamMode;
@@ -105,6 +109,15 @@ public class PoseClassifierProcessor {
           break;
         case "POSE_ZLWQX":
           reader = new BufferedReader(new InputStreamReader(context.getAssets().open(POSE_ZLWQX_FILE)));
+          break;
+        case "POSE_ZZTZ":
+          reader = new BufferedReader(new InputStreamReader(context.getAssets().open(POSE_ZZTZ_FILE)));
+          break;
+        case "POSE_PDTZ":
+          reader = new BufferedReader(new InputStreamReader(context.getAssets().open(POSE_PDTZ_FILE)));
+          break;
+        case "POSE_WSKH":
+          reader = new BufferedReader(new InputStreamReader(context.getAssets().open(POSE_WSKH_FILE)));
           break;
         case "Lift_YOUR_LEGS_STRAIGHT_BACK":
           reader = new BufferedReader(new InputStreamReader(context.getAssets().open(Lift_YOUR_LEGS_STRAIGHT_BACK_SAMPLES_FILE)));
@@ -177,14 +190,11 @@ public class PoseClassifierProcessor {
             //当计数器更新时，播放声音。
             double total = Double.parseDouble(num + "");
             if(repsAfter / total >= 0.5 && repsAfter / total < 0.6){
-              stopExcludeHalfFinishMusic();
-              playHalfFinishMusic(context);
+              playMusic(context, context.getString(R.string.ydybhzys));
             }else if(repsAfter == num){
-              stopExcludeComplateMusic();
-              playComplateMusic(context);
+              playMusic(context, context.getString(R.string.ydwc));
             }else {
-              stopExcludeTrainComplateMusic();
-              playTrainComplateMusic(context);
+              playMusic(context, context.getString(R.string.wcdz));
             }
             if(repsAfter > num){
               completeNum = num;
