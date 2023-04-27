@@ -17,6 +17,7 @@ import android.text.Html;
 import android.text.method.ScrollingMovementMethod;
 import android.util.Log;
 import android.view.*;
+import android.view.animation.*;
 import android.widget.*;
 import android.widget.AdapterView.OnItemSelectedListener;
 import androidx.appcompat.app.AppCompatActivity;
@@ -45,6 +46,7 @@ import java.util.concurrent.TimeUnit;
 
 import static android.widget.RelativeLayout.CENTER_IN_PARENT;
 import static com.example.cameramodule.java.posedetector.classification.PoseClassifierProcessor.completeNum;
+import static com.example.cameramodule.java.utils.CommonUtils.NumberToChn;
 
 /** Live preview demo for ML Kit APIs. */
 //ML Kit api的实时预览演示
@@ -306,12 +308,8 @@ implements OnRequestPermissionsResultCallback,
           if(completeNum < num.intValue()){
             long ys = System.currentTimeMillis() % 2;
             if(ys > 0){
-              //stopExcludeDetectingPortraitMusic();
-              //playDetectingPortraitMusic(LivePreviewActivity.this);
               playMusic(LivePreviewActivity.this, LivePreviewActivity.this.getString(R.string.rxjc));
             }else {
-              //stopExcludeDetectingPortrait2Music();
-              //playDetectingPortraitMusic2(LivePreviewActivity.this);
               playMusic(LivePreviewActivity.this, LivePreviewActivity.this.getString(R.string.rxjc2));
             }
           }
@@ -381,8 +379,8 @@ implements OnRequestPermissionsResultCallback,
     //  }
     //});
     try {
-      String dzsx = "http://43.143.181.73/app/第"+ indexNum +"个动作.MP3";
-      String dzmc = "http://43.143.181.73/app/"+selectedModel+".MP3";
+      String dzsx = "http://47.95.211.83/app/第"+ indexNum +"个动作.MP3";
+      String dzmc = "http://47.95.211.83/app/"+selectedModel+".MP3";
       playDzsxMusic(dzsx,  dzmc);
     } catch (IOException e) {
       throw new RuntimeException(e);
@@ -419,7 +417,8 @@ implements OnRequestPermissionsResultCallback,
       @Override
       public void onPrepared(MediaPlayer mediaPlayer) {
         dzsxMediaPlayer.start();
-        mStartCount.setText("第一个动作");
+        //String number = NumberToChn(indexNum);
+        mStartCount.setText("第"+ indexNum +"个动作");
       }
     });
     dzsxMediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
@@ -474,7 +473,7 @@ implements OnRequestPermissionsResultCallback,
     qzbMediaPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
       @Override
       public void onPrepared(MediaPlayer mediaPlayer) {
-        mStartCount.setText("准备");
+        mStartCount.setText("请准备");
         qzbMediaPlayer.start();
       }
     });
@@ -541,6 +540,7 @@ implements OnRequestPermissionsResultCallback,
         mediaPlayer.release();
         countDownLayout.setVisibility(View.INVISIBLE);
         showTskView();
+        backBtn.setVisibility(View.VISIBLE);
         //播放开始的音乐
         playMusic(LivePreviewActivity.this, LivePreviewActivity.this.getString(R.string.ydzb));
         //创建相机

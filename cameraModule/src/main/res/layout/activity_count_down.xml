@@ -27,7 +27,8 @@
             android:textColor="@color/green"
             android:textStyle="bold"
             android:text="3"
-            android:textSize="100sp" android:layout_centerInParent="true"/>
+            android:textSize="72dp"
+            android:layout_centerInParent="true"/>
 
 <!--    <TextView-->
 <!--            android:id="@+id/tkText"-->
